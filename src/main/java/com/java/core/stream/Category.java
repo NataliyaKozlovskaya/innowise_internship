@@ -5,10 +5,10 @@ import lombok.Getter;
 @Getter
 public enum Category {
 
-    ELECTRONICS,
-    CLOTHING,
-    BOOKS,
-    HOME,
-    BEAUTY,
-    TOYS
+  ELECTRONICS,
+  CLOTHING,
+  BOOKS,
+  HOME,
+  BEAUTY,
+  TOYS
 }

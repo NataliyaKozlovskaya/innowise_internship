@@ -3,99 +3,99 @@ package com.java.core.linkedlist;
 import java.util.NoSuchElementException;
 
 /**
- * Интерфейс для работы с двусвязным списком
+ * Interface for working with a doubly linked list
  */
 public interface MyLinkedList<T> {
 
-    /**
-     * Метод возвращает размер списка
-     *
-     * @return количество элементов в списке
-     */
-    int size();
+  /**
+   * Method returns the size of the list
+   *
+   * @return the number of elements in the list
+   */
+  int size();
 
-    /**
-     * Метод добавляет элемент в начало списка
-     *
-     * @param element элемент для добавления
-     */
-    void addFirst(T element);
+  /**
+   * Method adds an element to the beginning of the list
+   *
+   * @param element element to add
+   */
+  void addFirst(T element);
 
-    /**
-     * Метод добавляет элемент в конец списка
-     *
-     * @param element элемент для добавления
-     */
-    void addLast(T element);
+  /**
+   * Method adds an element to the end of the list
+   *
+   * @param element element to add
+   */
+  void addLast(T element);
 
-    /**
-     * Метод добавляет элемент по указанному индексу
-     *
-     * @param index   индекс для вставки
-     * @param element элемент для добавления
-     * @throws IndexOutOfBoundsException если индекс невалидный
-     */
-    void add(int index, T element);
+  /**
+   * The method adds an element at the specified index
+   *
+   * @param index   index to insert
+   * @param element element to add
+   * @throws IndexOutOfBoundsException if the index is invalid
+   */
+  void add(int index, T element);
 
-    /**
-     * Метод возвращает первый элемент списка
-     *
-     * @return первый элемент
-     * @throws NoSuchElementException если список пуст
-     */
-    T getFirst();
+  /**
+   * The method returns the first element of the list
+   *
+   * @return the first element
+   * @throws NoSuchElementException if the list is empty
+   */
+  T getFirst();
 
-    /**
-     * Метод возвращает последний элемент списка
-     *
-     * @return последний элемент
-     * @throws NoSuchElementException если список пуст
-     */
-    T getLast();
+  /**
+   * The method returns the first element of the list
+   *
+   * @return the first element
+   * @throws NoSuchElementException if the list is empty
+   */
+  T getLast();
 
-    /**
-     * Метод возвращает элемент по указанному индексу
-     *
-     * @param index индекс элемента
-     * @return элемент по указанному индексу
-     * @throws IndexOutOfBoundsException если индекс невалидный
-     */
-    T get(int index);
+  /**
+   * The method returns the element at the specified index
+   *
+   * @param index element index
+   * @return element at the specified index
+   * @throws IndexOutOfBoundsException if the index is invalid
+   */
+  T get(int index);
 
-    /**
-     * Метод удаляет и возвращает первый элемент списка
-     *
-     * @return удаленный первый элемент
-     * @throws NoSuchElementException если список пуст
-     */
-    T removeFirst();
+  /**
+   * Method removes and returns the first element of the list
+   *
+   * @return the removed first element
+   * @throws NoSuchElementException if the list is empty
+   */
+  T removeFirst();
 
-    /**
-     * Метод удаляет и возвращает последний элемент списка
-     *
-     * @return удаленный последний элемент
-     * @throws NoSuchElementException если список пуст
-     */
-    T removeLast();
+  /**
+   * Method removes and returns the last element of the list
+   *
+   * @return the removed last element
+   * @throws NoSuchElementException if the list is empty
+   */
+  T removeLast();
 
-    /**
-     * Метод удаляет и возвращает элемент по указанному индексу
-     *
-     * @param index индекс элемента для удаления
-     * @return удаленный элемент
-     * @throws IndexOutOfBoundsException если индекс невалидный
-     */
-    T remove(int index);
+  /**
+   * Method removes and returns the element at the specified index
+   *
+   * @param index index of the element to remove
+   * @return the removed element
+   * @throws IndexOutOfBoundsException if the index is invalid
+   */
+  T remove(int index);
 
-    /**
-     * Метод очищает список
-     */
-    void clear();
+  /**
+   * Method clears the list
+   */
+  void clear();
 
-    /**
-     * метод проверяет, пуст ли список
-     *
-     * @return true если список пуст
-     */
-    boolean isEmpty();
+  /**
+   * Method checks if the list is empty
+   *
+   * @return true if the list is empty
+   */
+  boolean isEmpty();
 }

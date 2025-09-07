@@ -1,61 +1,64 @@
 package com.java.core.skynet;
 
 /**
- * Класс симулирующий создание армии роботов
+ * Class simulating the creation of an army of robots
  */
 public class RobotWarSimulation {
-    public static void main(String[] args) throws InterruptedException {
-        Factory factory = new Factory();
-        WorldFaction world = new WorldFaction(factory);
-        WednesdayFaction wednesday = new WednesdayFaction(factory);
 
-        Thread factoryThread = new Thread(() -> {
-            try {
-                factory.produceParts();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
+  public static void main(String[] args) throws InterruptedException {
+    Factory factory = new Factory();
+    WorldFaction world = new WorldFaction(factory);
+    WednesdayFaction wednesday = new WednesdayFaction(factory);
 
-        Thread worldThread = new Thread(() -> {
-            try {
-                world.collectParts();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
+    Thread factoryThread = new Thread(() -> {
+      try {
+        factory.produceParts();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    });
 
-        Thread wednesdayThread = new Thread(() -> {
-            try {
-                wednesday.collectParts();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
+    Thread worldThread = new Thread(() -> {
+      try {
+        world.collectParts();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    });
 
-        factoryThread.start();
-        worldThread.start();
-        wednesdayThread.start();
+    Thread wednesdayThread = new Thread(() -> {
+      try {
+        wednesday.collectParts();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    });
 
-        factoryThread.join();
-        worldThread.join();
-        wednesdayThread.join();
+    factoryThread.start();
+    worldThread.start();
+    wednesdayThread.start();
 
-        // Определяем победителя по значению strength
-        // (получаем суммированием значения strength каждой части робота)
-        int worldStrength = world.getTotalStrength();
-        int wednesdayStrength = wednesday.getTotalStrength();
+    factoryThread.join();
+    worldThread.join();
+    wednesdayThread.join();
 
-        System.out.println("\n=== РЕЗУЛЬТАТЫ ===");
-        System.out.println("World: " + world.getRobotsCount() + " роботов, общая сила: " + worldStrength);
-        System.out.println("Wednesday: " + wednesday.getRobotsCount() + " роботов, общая сила: " + wednesdayStrength);
+    // Determine the winner by the strength value
+    // (obtained by summing the strength value of each part of the robot)
+    int worldStrength = world.getTotalStrength();
+    int wednesdayStrength = wednesday.getTotalStrength();
 
-        if (worldStrength > wednesdayStrength) {
-            System.out.println("ПОБЕДИТЕЛЬ: World!");
-        } else if (wednesdayStrength > worldStrength) {
-            System.out.println("ПОБЕДИТЕЛЬ: Wednesday!");
-        } else {
-            System.out.println("НИЧЬЯ!");
-        }
+    System.out.println("\n=== RESULTS ===");
+    System.out.println(
+        "World: " + world.getRobotsCount() + " robots, total force: " + worldStrength);
+    System.out.println(
+        "Wednesday: " + wednesday.getRobotsCount() + " robots, total force: " + wednesdayStrength);
+
+    if (worldStrength > wednesdayStrength) {
+      System.out.println("WINNER: World!");
+    } else if (wednesdayStrength > worldStrength) {
+      System.out.println("WINNER: Wednesday!");
+    } else {
+      System.out.println("DRAW!");
     }
+  }
 }

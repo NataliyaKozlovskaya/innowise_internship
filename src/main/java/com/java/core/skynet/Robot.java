@@ -6,24 +6,25 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Класс создаваемого робота
+ * Class of the robot being created
  */
 @Getter
 @Setter
 public class Robot {
-    private final Map<PartType, RobotPart> parts = new EnumMap<>(PartType.class);
-    private int strength = 0;// Сила, складывается из значения quality
 
-    public void addPart(RobotPart part) {
-        parts.put(part.getType(), part);
-        strength += part.getQuality();
-    }
+  private final Map<PartType, RobotPart> parts = new EnumMap<>(PartType.class);
+  private int strength = 0;// Strength is made up of the quality value
 
-    public int getStrength() {
-        return strength;
-    }
+  public void addPart(RobotPart part) {
+    parts.put(part.getType(), part);
+    strength += part.getQuality();
+  }
 
-    public boolean isComplete() {
-        return parts.size() == PartType.values().length;
-    }
+  public int getStrength() {
+    return strength;
+  }
+
+  public boolean isComplete() {
+    return parts.size() == PartType.values().length;
+  }
 }

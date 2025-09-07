@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <!-- Основная информация о проекте -->
+  <!-- Basic information about the project -->
   <groupId>com.example</groupId>
   <artifactId>innowise_internship</artifactId>
   <version>1.0-SNAPSHOT</version>
@@ -13,52 +13,58 @@
   <name>my-innowise_internship</name>
   <description>My Java Project with Maven</description>
 
-  <!-- Настройки компиляции -->
+  <!-- Compilation settings -->
   <properties>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <!-- Задание версий плагинов в properties - хороший тон -->
-    <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+    <junit.jupiter.version>5.9.2</junit.jupiter.version>
+    <slf4j.version>2.0.9</slf4j.version>
+    <logback.version>1.4.11</logback.version>
+    <gson.version>2.10.1</gson.version>
+    <lombok.version>1.18.30</lombok.version>
     <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+    <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
+    <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+
   </properties>
 
-  <!-- Зависимости -->
+  <!-- Dependencies -->
   <dependencies>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>5.9.2</version>
+      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>2.0.9</version>
+      <version>${slf4j.version}</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.4.11</version>
+      <version>${logback.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.10.1</version>
+      <version>${gson.version}</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.30</version>
+      <version>${lombok.version}</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
 
-  <!-- Сборка и плагины -->
+  <!-- Assembly and plugins -->
   <build>
     <plugins>
-      <!-- Плагин для компиляции  -->
+      <!-- Compilation plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -70,7 +76,7 @@
         </configuration>
       </plugin>
 
-      <!-- Плагин для создания JAR с указанием главного класса -->
+      <!-- Plugin for creating JAR with main class specified -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -84,11 +90,11 @@
         </configuration>
       </plugin>
 
-      <!-- (Опционально) Плагин для запуска JUnit 5 тестов -->
+      <!-- (Optional) Plugin for running JUnit 5 tests -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.1.2</version>
+        <version>${maven.surefire.plugin.version}</version>
       </plugin>
     </plugins>
   </build>
