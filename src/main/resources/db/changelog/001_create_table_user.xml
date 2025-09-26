@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+  <changeSet id="001-1" author="NAKozlovskaya">
+    <comment>Create user table with indexes</comment>
+
+    <createTable tableName="user">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_user"/>
+      </column>
+      <column name="name" type="VARCHAR(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="surname" type="VARCHAR(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="birth_date" type="DATE">
+        <constraints nullable="false"/>
+      </column>
+      <column name="email" type="VARCHAR(255)">
+        <constraints nullable="false" unique="true" uniqueConstraintName="uq_user_email"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="001-2" author="NAKozlovskaya">
+    <comment>Create index for user table</comment>
+
+    <preConditions onFail="MARK_RAN">
+      <tableExists tableName="user"/>
+      <not>
+        <indexExists tableName="user" indexName="idx_user_id"/>
+      </not>
+    </preConditions>
+
+    <createIndex tableName="user" indexName="idx_user_id">
+      <column name="id"/>
+    </createIndex>
+
+    <rollback>
+      <dropIndex tableName="user" indexName="idx_user_id"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="001-3" author="NAKozlovskaya">
+    <comment>Create index for user table</comment>
+
+    <preConditions onFail="MARK_RAN">
+      <tableExists tableName="user"/>
+      <not>
+        <indexExists tableName="user" indexName="idx_user_email"/>
+      </not>
+    </preConditions>
+
+    <createIndex tableName="user" indexName="idx_user_email">
+      <column name="email"/>
+    </createIndex>
+
+    <rollback>
+      <dropIndex tableName="user" indexName="idx_user_email"/>
+    </rollback>
+
+  </changeSet>
+</databaseChangeLog>

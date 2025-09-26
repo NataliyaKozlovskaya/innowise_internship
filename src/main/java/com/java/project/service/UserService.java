@@ -1,0 +1,61 @@
+package com.java.project.service;
+
+import com.java.project.dto.user.CreateUserRequest;
+import com.java.project.dto.user.UpdateUserRequest;
+import com.java.project.dto.user.UserDTO;
+import java.util.List;
+
+/**
+ * Service interface for managing User entities. Provides comprehensive CRUD operations for users
+ * and their payment cards.
+ */
+public interface UserService {
+
+  /**
+   * Creates a new user
+   *
+   * @param request user to be created
+   * @return user
+   */
+  UserDTO createUser(CreateUserRequest request);
+
+  /**
+   * Find user by identifier
+   *
+   * @param id user identifier
+   * @return user
+   */
+  UserDTO getUserById(Long id);
+
+  /**
+   * Find list of users by ids
+   *
+   * @param ids list of  identifiers
+   * @return list of users
+   */
+  List<UserDTO> getUsersByIds(List<Long> ids);
+
+  /**
+   * Find user by email
+   *
+   * @param email user email
+   * @return user
+   */
+  UserDTO getUserByEmail(String email);
+
+  /**
+   * Update user by identifier
+   *
+   * @param id      user identifier
+   * @param request the user object containing updated information
+   * @return updated user
+   */
+  UserDTO updateUser(Long id, UpdateUserRequest request);
+
+  /**
+   * Delete user by identifier (cascade delete cards)
+   *
+   * @param id user identifier
+   */
+  void deleteUser(Long id);
+}

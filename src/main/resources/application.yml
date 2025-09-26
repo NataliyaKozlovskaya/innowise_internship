@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: innowise-project
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      driver-class-name: org.postgresql.Driver
+
+  jpa:
+    generate-ddl: false
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        ddl-auto: validate
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
