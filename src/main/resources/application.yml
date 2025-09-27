@@ -1,26 +1,45 @@
+server:
+  port: 8088
+
 spring:
   application:
     name: innowise-project
 
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    clear-checksums: true
+    url: jdbc:postgresql://localhost:5432/innowise_db
+    user: postgres
+    password: password
+
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
-    type: com.zaxxer.hikari.HikariDataSource
-    hikari:
-      connection-timeout: 30000
-      maximum-pool-size: 10
-      minimum-idle: 2
-      idle-timeout: 600000
-      max-lifetime: 1800000
-      driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://postgres:5432/innowise_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
 
   jpa:
-    generate-ddl: false
-    open-in-view: false
+    hibernate:
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
-        ddl-auto: validate
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

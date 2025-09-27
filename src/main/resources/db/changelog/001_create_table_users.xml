@@ -6,9 +6,9 @@
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
 
   <changeSet id="001-1" author="NAKozlovskaya">
-    <comment>Create user table with indexes</comment>
+    <comment>Create users table with indexes</comment>
 
-    <createTable tableName="user">
+    <createTable tableName="users">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false" primaryKeyName="pk_user"/>
       </column>
@@ -28,40 +28,26 @@
   </changeSet>
 
   <changeSet id="001-2" author="NAKozlovskaya">
-    <comment>Create index for user table</comment>
+    <comment>Create index for users table</comment>
 
-    <preConditions onFail="MARK_RAN">
-      <tableExists tableName="user"/>
-      <not>
-        <indexExists tableName="user" indexName="idx_user_id"/>
-      </not>
-    </preConditions>
-
-    <createIndex tableName="user" indexName="idx_user_id">
+    <createIndex tableName="users" indexName="idx_user_id">
       <column name="id"/>
     </createIndex>
 
     <rollback>
-      <dropIndex tableName="user" indexName="idx_user_id"/>
+      <dropIndex tableName="users" indexName="idx_user_id"/>
     </rollback>
   </changeSet>
 
   <changeSet id="001-3" author="NAKozlovskaya">
-    <comment>Create index for user table</comment>
+    <comment>Create index for users table</comment>
 
-    <preConditions onFail="MARK_RAN">
-      <tableExists tableName="user"/>
-      <not>
-        <indexExists tableName="user" indexName="idx_user_email"/>
-      </not>
-    </preConditions>
-
-    <createIndex tableName="user" indexName="idx_user_email">
+    <createIndex tableName="users" indexName="idx_user_email">
       <column name="email"/>
     </createIndex>
 
     <rollback>
-      <dropIndex tableName="user" indexName="idx_user_email"/>
+      <dropIndex tableName="users" indexName="idx_user_email"/>
     </rollback>
 
   </changeSet>

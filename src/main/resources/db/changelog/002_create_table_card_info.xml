@@ -8,13 +8,6 @@
   <changeSet id="002-1" author="NAKozlovskaya">
     <comment>Create card_info table with foreign key</comment>
 
-    <preConditions onFail="MARK_RAN">
-      <not>
-        <tableExists tableName="card_info"/>
-      </not>
-      <tableExists tableName="user"/>
-    </preConditions>
-
     <createTable tableName="card_info">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false" primaryKeyName="pk_card_info"/>
@@ -41,18 +34,10 @@
   <changeSet id="002-2" author="NAKozlovskaya">
     <comment>Add foreign key constraint to card_info</comment>
 
-    <preConditions onFail="MARK_RAN">
-      <tableExists tableName="card_info"/>
-      <tableExists tableName="user"/>
-      <not>
-        <foreignKeyConstraintExists foreignKeyName="fk_card_info_user_id"/>
-      </not>
-    </preConditions>
-
     <addForeignKeyConstraint
       baseTableName="card_info"
       baseColumnNames="user_id"
-      referencedTableName="use"
+      referencedTableName="users"
       referencedColumnNames="id"
       constraintName="fk_card_info_user_id"
       onDelete="CASCADE"
@@ -66,13 +51,6 @@
   <changeSet id="002-3" author="NAKozlovskaya">
     <comment>Create index for card_info table</comment>
 
-    <preConditions onFail="MARK_RAN">
-      <tableExists tableName="card_info"/>
-      <not>
-        <indexExists tableName="card_info" indexName="idx_card_info_user_id"/>
-      </not>
-    </preConditions>
-
     <createIndex tableName="card_info" indexName="idx_card_info_id">
       <column name="id"/>
     </createIndex>
@@ -85,13 +63,6 @@
 
   <changeSet id="002-4" author="NAKozlovskaya">
     <comment>Create index for card_info table</comment>
-
-    <preConditions onFail="MARK_RAN">
-      <tableExists tableName="card_info"/>
-      <not>
-        <indexExists tableName="card_info" indexName="idx_card_info_number"/>
-      </not>
-    </preConditions>
 
     <createIndex tableName="card_info" indexName="idx_card_info_number">
       <column name="number"/>

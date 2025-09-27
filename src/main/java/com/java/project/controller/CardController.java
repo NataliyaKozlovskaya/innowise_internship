@@ -40,7 +40,7 @@ public class CardController {
    * Create a new card
    */
   @PostMapping
-  public ResponseEntity<CardDTO> createCard(Long userId,
+  public ResponseEntity<CardDTO> createCard(@RequestParam(name = "userId") Long userId,
       @RequestBody @Valid CreateCardRequest request) {
     CardDTO createdCard = cardService.createCard(userId, request);
     return ResponseEntity.status(HttpStatus.CREATED).body(createdCard);
@@ -58,8 +58,8 @@ public class CardController {
   /**
    * Get cards by list of IDs
    */
-  @GetMapping
-  public ResponseEntity<List<CardDTO>> getCardsByIds(@RequestParam List<Long> ids) {
+  @GetMapping("/batch")
+  public ResponseEntity<List<CardDTO>> getCardsByIds(@RequestParam(name = "ids") List<Long> ids) {
     List<CardDTO> cards = cardService.getCardsByIds(ids);
     return ResponseEntity.ok(cards);
   }

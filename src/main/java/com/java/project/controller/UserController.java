@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -56,8 +57,8 @@ public class UserController {
   /**
    * Get users by list of IDs
    */
-  @PostMapping("/batch")
-  public ResponseEntity<List<UserDTO>> getUsersByIds(@RequestBody @Valid List<Long> ids) {
+  @GetMapping("/batch")
+  public ResponseEntity<List<UserDTO>> getUsersByIds(@RequestParam(name = "ids") List<Long> ids) {
     List<UserDTO> responses = userService.getUsersByIds(ids);
     return ResponseEntity.ok(responses);
   }
@@ -65,8 +66,8 @@ public class UserController {
   /**
    * Get user by email address
    */
-  @GetMapping("/email/{email}")
-  public ResponseEntity<UserDTO> getUserByEmail(@PathVariable String email) {
+  @GetMapping("/email")
+  public ResponseEntity<UserDTO> getUserByEmail(@RequestParam(name = "email") String email) {
     UserDTO response = userService.getUserByEmail(email);
     return ResponseEntity.ok(response);
   }
