@@ -22,13 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * REST Controller for managing user operations. Provides endpoints for user CRUD operations and
- * card management.
+ * card management
  */
 @RestController
 @RequestMapping("/api/users")
 @Validated
 public class UserController {
-
   private final UserService userService;
 
   @Autowired

@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * An entity, that provides information about the User
+ * An entity, that provides information about the user
  */
 
 @Getter

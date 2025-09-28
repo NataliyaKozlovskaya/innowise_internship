@@ -22,13 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * REST controller for managing Card operations. Provides endpoints for CRUD operations on Card
- * entities.
+ * entities
  */
 @RestController
 @RequestMapping("/api/cards")
 @Validated
 public class CardController {
-
   private final CardService cardService;
 
   @Autowired
