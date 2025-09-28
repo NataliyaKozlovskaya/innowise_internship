@@ -26,11 +26,12 @@
     <org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
     <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
     <lombok.version>1.18.30</lombok.version>
+    <jacoco.version>0.8.10</jacoco.version>
 
     <!-- Sonar -->
     <sonar.host.url>http://localhost:9000</sonar.host.url>
-    <sonar.projectKey>your-project-key</sonar.projectKey>
-    <sonar.projectName>Your Project Name</sonar.projectName>
+    <sonar.projectKey>innowise-internship</sonar.projectKey>
+    <sonar.projectName>Innowise Internship Project</sonar.projectName>
   </properties>
 
   <dependencies>
@@ -191,6 +192,28 @@
             </to>
           </configuration>
         </plugin>
+
+        <!-- Jacoco Plugin -->
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${jacoco.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>report</id>
+              <phase>test</phase>
+              <goals>
+                <goal>report</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
       </plugins>
     </build>
 </project>
