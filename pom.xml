@@ -28,10 +28,6 @@
     <lombok.version>1.18.30</lombok.version>
     <jacoco.version>0.8.10</jacoco.version>
 
-    <!-- Sonar -->
-    <sonar.host.url>http://localhost:9000</sonar.host.url>
-    <sonar.projectKey>innowise-internship</sonar.projectKey>
-    <sonar.projectName>Innowise Internship Project</sonar.projectName>
   </properties>
 
   <dependencies>
