@@ -150,8 +150,8 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           mvn sonar:sonar \
-            -Dsonar.organization=NataliyaKozlovskaya_innowise_internship \
-            -Dsonar.projectKey=nataliyakozlovskaya \
+            -Dsonar.organization=nataliyakozlovskaya \
+            -Dsonar.projectKey=NataliyaKozlovskaya_innowise_internship \
             -Dsonar.projectName='Innowise Internship Project' \
             -Dsonar.java.coveragePlugin=jacoco \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
