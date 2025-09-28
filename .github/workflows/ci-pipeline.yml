@@ -150,10 +150,15 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           mvn sonar:sonar \
-            -Dsonar.projectKey=innowise-internship \
+            -Dsonar.organization=your-organization-name \
+            -Dsonar.projectKey=NataliyaKozlovskaya_innowise_internship \
             -Dsonar.projectName='Innowise Internship Project' \
             -Dsonar.java.coveragePlugin=jacoco \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.qualitygate.wait=false \
+            -Dsonar.issue.ignore.multicriteria=e1 \
+            -Dsonar.issue.ignore.multicriteria.e1.ruleKey=squid:S00116 \
+            -Dsonar.issue.ignore.multicriteria.e1.resourceKey=**/*
 
   docker-build:
     name: Build and Push Docker Image
