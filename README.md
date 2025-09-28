@@ -20,6 +20,6 @@ Microservice for managing users and bank cards.
 ## Quick Start
 
 ```bash
-docker-compose up -d
+docker-compose up -d 
 
 docker exec -it innowise-postgres psql -U postgres -d innowise_db - сonnecting to a database in Docker
