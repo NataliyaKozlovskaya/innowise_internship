@@ -6,6 +6,7 @@ import com.java.project.dto.card.UpdateCardRequest;
 import com.java.project.entity.Card;
 import com.java.project.entity.User;
 import com.java.project.exception.CardNotFoundException;
+import com.java.project.exception.UserNotFoundException;
 import com.java.project.repository.CardRepository;
 import com.java.project.repository.UserRepository;
 import com.java.project.service.CardService;
@@ -27,12 +28,11 @@ public class CardServiceImpl implements CardService {
   private final UserRepository userRepository;
   private final CardMapper cardMapper;
 
-
   @Transactional
   @Override
   public CardDTO createCard(Long userId, CreateCardRequest request) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
     Card card = new Card();
     card.setNumber(request.getNumber());
@@ -69,7 +69,7 @@ public class CardServiceImpl implements CardService {
   @Override
   public CardDTO updateCard(Long id, UpdateCardRequest request) {
     Card card = cardInfoRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException(CARD_NOT_FOUND + id));
+        .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND + id));
 
     card.setHolder(request.getHolder());
     Card updatedCard = cardInfoRepository.save(card);

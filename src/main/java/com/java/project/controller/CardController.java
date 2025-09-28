@@ -40,8 +40,8 @@ public class CardController {
    * Create a new card
    */
   @PostMapping
-  public ResponseEntity<CardDTO> createCard(@RequestParam(name = "userId") Long userId,
-      @RequestBody @Valid CreateCardRequest request) {
+  public ResponseEntity<CardDTO> createCard(@RequestParam (name = "userId") Long userId,
+      @Valid @RequestBody CreateCardRequest request) {
     CardDTO createdCard = cardService.createCard(userId, request);
     return ResponseEntity.status(HttpStatus.CREATED).body(createdCard);
   }
@@ -70,7 +70,7 @@ public class CardController {
   @PatchMapping("/{id}")
   public ResponseEntity<CardDTO> updateCard(
       @PathVariable Long id,
-      @RequestBody @Valid UpdateCardRequest request) {
+      @Valid @RequestBody UpdateCardRequest request) {
     CardDTO updatedCard = cardService.updateCard(id, request);
     return ResponseEntity.ok(updatedCard);
   }

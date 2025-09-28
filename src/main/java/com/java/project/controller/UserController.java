@@ -67,7 +67,7 @@ public class UserController {
    * Get user by email address
    */
   @GetMapping("/email")
-  public ResponseEntity<UserDTO> getUserByEmail(@RequestParam(name = "email") String email) {
+  public ResponseEntity<UserDTO> getUserByEmail(@Valid @RequestParam(name = "email") String email) {
     UserDTO response = userService.getUserByEmail(email);
     return ResponseEntity.ok(response);
   }
