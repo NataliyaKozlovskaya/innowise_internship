@@ -53,7 +53,7 @@ jobs:
           cache: maven
 
       - name: Build application
-        run: ./mvnw clean compile -DskipTests
+        run: mvn clean compile -DskipTests
 
   test:
     name: Run Tests
@@ -97,13 +97,13 @@ jobs:
           cache: maven
 
       - name: Run unit tests
-        run: ./mvnw test
+        run: mvn test
 
       - name: Run integration tests
-        run: ./mvnw verify -DskipUnitTests
+        run: mvn verify -DskipUnitTests
 
       - name: Generate test coverage report
-        run: ./mvnw jacoco:report
+        run: mvn jacoco:report
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -142,14 +142,14 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
 
       - name: Build with coverage
-        run: ./mvnw clean verify -Djacoco.check.skip=true
+        run: mvn clean verify -Djacoco.check.skip=true
 
       - name: Run SonarQube analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          ./mvnw sonar:sonar \
+          mvn sonar:sonar \
             -Dsonar.organization=nataliyakozlovskaya \
             -Dsonar.projectKey=NataliyaKozlovskaya_innowise_internship \
             -Dsonar.projectName='Innowise Internship Project' \
