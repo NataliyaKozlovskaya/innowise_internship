@@ -18,23 +18,11 @@ public final class TestDataFactory {
 
   public static CreateUserRequest getCreateUserRequest(String name, String surname, LocalDate date,
       String email) {
-    CreateUserRequest request = new CreateUserRequest();
-    request.setName(name);
-    request.setSurname(surname);
-    request.setBirthDate(date);
-    request.setEmail(email);
-
-    return request;
+    return new CreateUserRequest(name, surname, email, date);
   }
 
   public static UserDTO getUserDTO(String name, String surname, LocalDate date, String email) {
-    UserDTO expectedDTO = new UserDTO();
-    expectedDTO.setSurname(surname);
-    expectedDTO.setName(name);
-    expectedDTO.setBirthDate(date);
-    expectedDTO.setEmail(email);
-
-    return expectedDTO;
+    return new UserDTO(surname, name, date, email);
   }
 
   public static User getUser(Long id, String name, String surname, LocalDate date, String email) {
@@ -59,22 +47,13 @@ public final class TestDataFactory {
   }
 
   public static CardDTO getCardDTO(String number, String holder, LocalDate expirationDate) {
-    CardDTO cardDTO = new CardDTO();
-    cardDTO.setNumber(number);
-    cardDTO.setHolder(holder);
-    cardDTO.setExpirationDate(expirationDate);
-
-    return cardDTO;
+    return new CardDTO(number, holder, expirationDate);
   }
 
   public static CreateCardRequest getCreateCardRequest(String number, String holder,
       LocalDate expirationDate) {
 
-    CreateCardRequest request = new CreateCardRequest();
-    request.setNumber(number);
-    request.setHolder(holder);
-    request.setExpirationDate(expirationDate);
-    return request;
+    return new CreateCardRequest(number, holder, expirationDate);
   }
 
   public static Card getCard(String number, String holder, LocalDate expirationDate, User user) {

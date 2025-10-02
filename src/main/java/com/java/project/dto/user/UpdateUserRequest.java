@@ -1,14 +1,11 @@
 package com.java.project.dto.user;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Email;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class UpdateUserRequest {
-  private String name;
-  private String surname;
-  private String email;
+public record UpdateUserRequest(
+    String name,
+    String surname,
+    @Email String email
+) {
+
 }

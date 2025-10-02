@@ -34,15 +34,15 @@ public class UserServiceImpl implements UserService {
   @Transactional
   @Override
   public UserDTO createUser(CreateUserRequest request) {
-    userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
-      throw new EmailAlreadyExistsException("Email already exists: " + request.getEmail());
+    userRepository.findByEmail(request.email()).ifPresent(user -> {
+      throw new EmailAlreadyExistsException("Email already exists: " + request.email());
     });
 
     User user = new User();
-    user.setName(request.getName());
-    user.setSurname(request.getSurname());
-    user.setBirthDate(request.getBirthDate());
-    user.setEmail(request.getEmail());
+    user.setName(request.name());
+    user.setSurname(request.surname());
+    user.setBirthDate(request.birthDate());
+    user.setEmail(request.email());
     User savedUser = userRepository.save(user);
 
     return userMapper.toUserDTO(savedUser);
@@ -54,6 +54,13 @@ public class UserServiceImpl implements UserService {
   public UserDTO getUserById(Long id) {
     return userRepository.findById(id)
         .map(userMapper::toUserDTO)
+        .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
+  }
+
+  @Transactional(readOnly = true)
+  @Override
+  public User getUserEntityById(Long id) {
+    return userRepository.findById(id)
         .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
   }
 
@@ -87,13 +94,13 @@ public class UserServiceImpl implements UserService {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
 
-    if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+    if (request.email() != null && !request.email().equals(user.getEmail())) {
       evictEmailCache(user.getEmail());
     }
 
-    Optional.ofNullable(request.getName()).ifPresent(user::setName);
-    Optional.ofNullable(request.getSurname()).ifPresent(user::setSurname);
-    Optional.ofNullable(request.getEmail()).ifPresent(user::setEmail);
+    Optional.ofNullable(request.name()).ifPresent(user::setName);
+    Optional.ofNullable(request.surname()).ifPresent(user::setSurname);
+    Optional.ofNullable(request.email()).ifPresent(user::setEmail);
 
     User updatedUser = userRepository.save(user);
     return userMapper.toUserDTO(updatedUser);
@@ -104,7 +111,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public void deleteUser(Long id) {
     User user = userRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND + id));
+        .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
 
     evictEmailCache(user.getEmail());
     userRepository.delete(user);

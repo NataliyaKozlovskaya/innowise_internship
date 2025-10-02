@@ -6,10 +6,9 @@ import com.java.project.dto.card.UpdateCardRequest;
 import com.java.project.entity.Card;
 import com.java.project.entity.User;
 import com.java.project.exception.CardNotFoundException;
-import com.java.project.exception.UserNotFoundException;
 import com.java.project.repository.CardRepository;
-import com.java.project.repository.UserRepository;
 import com.java.project.service.CardService;
+import com.java.project.service.UserService;
 import com.java.project.util.CardMapper;
 import java.time.LocalDate;
 import java.util.List;
@@ -25,18 +24,17 @@ public class CardServiceImpl implements CardService {
 
   private static final String CARD_NOT_FOUND = "Card not found with id: ";
   private final CardRepository cardInfoRepository;
-  private final UserRepository userRepository;
+  private final UserService userService;
   private final CardMapper cardMapper;
 
   @Transactional
   @Override
   public CardDTO createCard(Long userId, CreateCardRequest request) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+    User user = userService.getUserEntityById(userId);
 
     Card card = new Card();
-    card.setNumber(request.getNumber());
-    card.setHolder(request.getHolder());
+    card.setNumber(request.number());
+    card.setHolder(request.holder());
     card.setExpirationDate(LocalDate.now().plusYears(4));
     card.setUser(user);
     cardInfoRepository.save(card);
@@ -71,7 +69,7 @@ public class CardServiceImpl implements CardService {
     Card card = cardInfoRepository.findById(id)
         .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND + id));
 
-    card.setHolder(request.getHolder());
+    card.setHolder(request.holder());
     Card updatedCard = cardInfoRepository.save(card);
 
     return cardMapper.toCardDTO(updatedCard);

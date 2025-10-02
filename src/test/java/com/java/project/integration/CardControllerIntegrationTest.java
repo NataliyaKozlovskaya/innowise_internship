@@ -21,9 +21,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 
-
+@TestPropertySource(properties = {
+    "spring.cache.type=none"
+})
 class CardControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Autowired
@@ -33,7 +36,7 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
 
   @BeforeEach
   void setUp() {
-    baseUrl = "/api/cards";
+    baseUrl = "/api/v1/cards";
   }
 
   @Test
@@ -49,14 +52,19 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
     headers.setContentType(MediaType.APPLICATION_JSON);
     HttpEntity<CreateCardRequest> entity = new HttpEntity<>(request, headers);
 
-    ResponseEntity<String> response = restTemplate.exchange(
+    ResponseEntity<CardDTO> response = restTemplate.exchange(
         baseUrl + "?userId=1",
         HttpMethod.POST,
         entity,
-        String.class
+        CardDTO.class
     );
 
     assertEquals(HttpStatus.CREATED, response.getStatusCode());
+
+    CardDTO responseBody = response.getBody();
+    assertNotNull(responseBody);
+    assertEquals("1234567890123456", responseBody.number());
+    assertEquals("Petr Ivanov", responseBody.holder());
   }
 
   @Test
@@ -75,8 +83,8 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertEquals("1234567890123456", response.getBody().getNumber());
-    assertEquals("Max Nio", response.getBody().getHolder());
+    assertEquals("1234567890123456", response.getBody().number());
+    assertEquals("Max Nio", response.getBody().holder());
   }
 
   @Test
@@ -111,9 +119,9 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
     assertEquals(2, response.getBody().length);
 
     List<CardDTO> cards = Arrays.asList(response.getBody());
-    assertTrue(cards.stream().anyMatch(c -> c.getNumber().equals("1111222233334444")));
-    assertTrue(cards.stream().anyMatch(c -> c.getNumber().equals("5555666677778888")));
-    assertTrue(cards.stream().noneMatch(c -> c.getNumber().equals("9999000011112222")));
+    assertTrue(cards.stream().anyMatch(c -> c.number().equals("1111222233334444")));
+    assertTrue(cards.stream().anyMatch(c -> c.number().equals("5555666677778888")));
+    assertTrue(cards.stream().noneMatch(c -> c.number().equals("9999000011112222")));
   }
 
   @Test
@@ -140,9 +148,9 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertEquals("MARK NIO", response.getBody().getHolder());
+    assertEquals("MARK NIO", response.getBody().holder());
     assertEquals("1234567890123456",
-        response.getBody().getNumber());
+        response.getBody().number());
   }
 
   @Test

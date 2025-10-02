@@ -38,6 +38,7 @@ public class RedisConfig {
   public LettuceConnectionFactory redisConnectionFactory() {
     return new LettuceConnectionFactory();
   }
+
   @Bean
   public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
     RedisTemplate<String, Object> template = new RedisTemplate<>();
@@ -45,6 +46,7 @@ public class RedisConfig {
     template.setValueSerializer(redisSerializer());
     return template;
   }
+
   private RedisSerializer<Object> redisSerializer() {
     ObjectMapper mapper = new ObjectMapper();
     mapper.registerModule(new JavaTimeModule());

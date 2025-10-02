@@ -6,7 +6,6 @@ import com.java.project.dto.card.UpdateCardRequest;
 import com.java.project.service.CardService;
 import jakarta.validation.Valid;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -25,12 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
  * entities
  */
 @RestController
-@RequestMapping("/api/cards")
+@RequestMapping("/api/v1/cards")
 @Validated
 public class CardController {
+
   private final CardService cardService;
 
-  @Autowired
   public CardController(CardService cardService) {
     this.cardService = cardService;
   }
@@ -39,7 +38,7 @@ public class CardController {
    * Create a new card
    */
   @PostMapping
-  public ResponseEntity<CardDTO> createCard(@RequestParam (name = "userId") Long userId,
+  public ResponseEntity<CardDTO> createCard(@RequestParam(name = "userId") Long userId,
       @Valid @RequestBody CreateCardRequest request) {
     CardDTO createdCard = cardService.createCard(userId, request);
     return ResponseEntity.status(HttpStatus.CREATED).body(createdCard);

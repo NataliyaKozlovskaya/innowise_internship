@@ -62,7 +62,7 @@ class UserServiceImplTest {
     UserDTO result = userService.createUser(request);
 
     assertNotNull(result);
-    assertEquals(expectedDTO.getEmail(), result.getEmail());
+    assertEquals(expectedDTO.email(), result.email());
 
     verify(userRepository).findByEmail(EMAIL);
     verify(userRepository).save(any(User.class));
@@ -148,7 +148,7 @@ class UserServiceImplTest {
     UserDTO result = userService.getUserByEmail(EMAIL);
 
     assertNotNull(result);
-    assertEquals(EMAIL, result.getEmail());
+    assertEquals(EMAIL, result.email());
     verify(userRepository).findByEmail(EMAIL);
     verify(userMapper).toUserDTO(user);
   }
@@ -170,9 +170,7 @@ class UserServiceImplTest {
 
     when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 
-    when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-      return invocation.<User>getArgument(0);
-    });
+    when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.<User>getArgument(0));
 
     when(userMapper.toUserDTO(any(User.class))).thenAnswer(invocation -> {
       User userToMap = invocation.getArgument(0);
@@ -183,9 +181,9 @@ class UserServiceImplTest {
     UserDTO result = userService.updateUser(USER_ID, request);
 
     assertNotNull(result);
-    assertEquals("NewName", result.getName());
-    assertEquals("new@example.com", result.getEmail());
-    assertEquals("NewSurname", result.getSurname());
+    assertEquals("NewName", result.name());
+    assertEquals("new@example.com", result.email());
+    assertEquals("NewSurname", result.surname());
 
     assertEquals("NewName", user.getName());
     assertEquals("NewSurname", user.getSurname());

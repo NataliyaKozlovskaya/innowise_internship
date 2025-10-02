@@ -9,7 +9,6 @@ import com.java.project.dto.user.CreateUserRequest;
 import com.java.project.dto.user.UpdateUserRequest;
 import com.java.project.dto.user.UserDTO;
 import com.java.project.entity.User;
-import com.java.project.service.UserService;
 import com.java.project.util.UserMapper;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -46,7 +45,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
 
   @BeforeEach
   void setUp() {
-    baseUrl = "/api/users";
+    baseUrl = "/api/v1/users";
   }
 
   @Test
@@ -67,9 +66,9 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
 
     assertEquals(HttpStatus.CREATED, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertEquals(EMAIL, response.getBody().getEmail());
-    assertEquals(NAME, response.getBody().getName());
-    assertEquals(SURNAME, response.getBody().getSurname());
+    assertEquals(EMAIL, response.getBody().email());
+    assertEquals(NAME, response.getBody().name());
+    assertEquals(SURNAME, response.getBody().surname());
   }
 
   @Test
@@ -86,8 +85,8 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertEquals("annaaa@example.com", response.getBody().getEmail());
-    assertEquals("Anna", response.getBody().getName());
+    assertEquals("annaaa@example.com", response.getBody().email());
+    assertEquals("Anna", response.getBody().name());
   }
 
   @Test
@@ -102,8 +101,8 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
     UserDTO dto = userMapper.toUserDTO(user);
 
     assertNotNull(dto);
-    assertEquals("annaaa@example.com", dto.getEmail());
-    assertEquals("Anna", dto.getName());
+    assertEquals("annaaa@example.com", dto.email());
+    assertEquals("Anna", dto.name());
   }
 
   @Test
@@ -135,8 +134,8 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
     assertEquals(2, response.getBody().length);
 
     List<UserDTO> users = Arrays.asList(response.getBody());
-    assertTrue(users.stream().noneMatch(u -> u.getEmail().equals(1L)));
-    assertTrue(users.stream().noneMatch(u -> u.getEmail().equals(2L)));
+    assertTrue(users.stream().noneMatch(u -> u.email().equals(1L)));
+    assertTrue(users.stream().noneMatch(u -> u.email().equals(2L)));
   }
 
   @Test
@@ -155,8 +154,8 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertEquals("anna@example.com", response.getBody().getEmail());
-    assertEquals("Anna", response.getBody().getName());
+    assertEquals("anna@example.com", response.getBody().email());
+    assertEquals("Anna", response.getBody().name());
   }
 
   @Test
@@ -182,9 +181,9 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
 
-    assertEquals("AnnaUp", response.getBody().getName());
-    assertEquals("HollUp", response.getBody().getSurname());
-    assertEquals("annaUp@example.com", response.getBody().getEmail());
+    assertEquals("AnnaUp", response.getBody().name());
+    assertEquals("HollUp", response.getBody().surname());
+    assertEquals("annaUp@example.com", response.getBody().email());
   }
 
   @Test

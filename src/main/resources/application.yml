@@ -9,9 +9,6 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.xml
     clear-checksums: true
-    url: jdbc:postgresql://localhost:5432/innowise_db
-    user: postgres
-    password: password
 
   datasource:
     url: ${DB_URL}

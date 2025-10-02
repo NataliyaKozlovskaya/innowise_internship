@@ -3,6 +3,7 @@ package com.java.project.service;
 import com.java.project.dto.user.CreateUserRequest;
 import com.java.project.dto.user.UpdateUserRequest;
 import com.java.project.dto.user.UserDTO;
+import com.java.project.entity.User;
 import java.util.List;
 
 /**
@@ -23,9 +24,17 @@ public interface UserService {
    * Find user by identifier
    *
    * @param id user identifier
-   * @return user
+   * @return userDTO
    */
   UserDTO getUserById(Long id);
+
+  /**
+   * Find userEntity by identifier
+   *
+   * @param id user identifier
+   * @return user
+   */
+  User getUserEntityById(Long id);
 
   /**
    * Find list of users by ids

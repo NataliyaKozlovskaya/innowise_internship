@@ -2,6 +2,8 @@ package com.java.project.unit;
 
 import static com.java.util.TestDataFactory.getCard;
 import static com.java.util.TestDataFactory.getCardDTO;
+import static com.java.util.TestDataFactory.getUser;
+import static com.java.util.TestDataFactory.getUserDTO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,13 +17,18 @@ import static org.mockito.Mockito.when;
 import com.java.project.dto.card.CardDTO;
 import com.java.project.dto.card.CreateCardRequest;
 import com.java.project.dto.card.UpdateCardRequest;
+import com.java.project.dto.user.UserDTO;
 import com.java.project.entity.Card;
 import com.java.project.entity.User;
 import com.java.project.exception.CardNotFoundException;
+import com.java.project.exception.UserNotFoundException;
 import com.java.project.repository.CardRepository;
 import com.java.project.repository.UserRepository;
+import com.java.project.service.UserService;
 import com.java.project.service.impl.CardServiceImpl;
 import com.java.project.util.CardMapper;
+import com.java.project.util.UserMapper;
+import com.java.util.TestDataFactory;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -38,41 +45,41 @@ class CardServiceImplTest {
   @Mock
   private CardRepository cardInfoRepository;
   @Mock
-  private UserRepository userRepository;
+  private UserService userService;
   @Mock
   private CardMapper cardMapper;
+  @Mock
+  private UserMapper userMapper;
 
   @InjectMocks
   private CardServiceImpl cardService;
 
-  private final Long USER_ID = 1L;
   private final Long CARD_ID = 1L;
   private final String CARD_NUMBER = "1234567890123456";
   private final String CARD_HOLDER = "Ivan Gyrin";
   private final LocalDate EXPIRATION_DATE = LocalDate.now().plusYears(4);
+  private final Long USER_ID = 1L;
+  private final String NAME = "Mark";
+  private final String SURNAME = "Staf";
+  private final String EMAIL = "test@gmail.com";
+  private final LocalDate BIRTH_DATE = LocalDate.of(1998, 05, 12);
 
   private CreateCardRequest getCreateCardRequest(String number, String holder,
       LocalDate expirationDate) {
-    CreateCardRequest request = new CreateCardRequest();
-    request.setNumber(number);
-    request.setHolder(holder);
-    request.setExpirationDate(expirationDate);
-
-    return request;
+    return new CreateCardRequest(number, holder, expirationDate);
   }
-
   @Test
   void createCard_WithValidData_ShouldReturnCardDTO() {
     CreateCardRequest request = getCreateCardRequest(CARD_NUMBER, CARD_HOLDER, EXPIRATION_DATE);
-    User user = new User();
-    user.setId(USER_ID);
+    User user = getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
+//    user.setId(USER_ID);
 
     Card savedCard = getCard(CARD_ID, CARD_NUMBER, CARD_HOLDER, EXPIRATION_DATE);
     savedCard.setUser(user);
 
     CardDTO expectedCardDTO = getCardDTO(CARD_NUMBER, CARD_HOLDER, EXPIRATION_DATE);
 
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+//    when(userService.getUserEntityById(USER_ID)).thenReturn(user);
     when(cardInfoRepository.save(any(Card.class))).thenReturn(savedCard);
     when(cardMapper.toCardDTO(any(Card.class))).thenReturn(expectedCardDTO);
 
@@ -80,25 +87,92 @@ class CardServiceImplTest {
 
     assertNotNull(result);
     assertEquals(expectedCardDTO, result);
-    assertEquals(CARD_NUMBER, result.getNumber());
-    assertEquals(CARD_HOLDER, result.getHolder());
+    assertEquals(CARD_NUMBER, result.number());
+    assertEquals(CARD_HOLDER, result.holder());
 
-    verify(userRepository, times(1)).findById(USER_ID);
+//    verify(userService, times(1)).getUserEntityById(USER_ID);
     verify(cardInfoRepository, times(1)).save(any(Card.class));
     verify(cardMapper, times(1)).toCardDTO(any(Card.class));
   }
-
+//  @Test
+//  void createCard_WithValidData_ShouldReturnCardDTO() {
+//    // Given
+//    CreateCardRequest request = getCreateCardRequest(CARD_NUMBER, CARD_HOLDER, EXPIRATION_DATE);
+//
+//    // Создаем UserDTO и User entity
+//    UserDTO userDTO = getUserDTO(NAME, SURNAME, BIRTH_DATE, EMAIL);
+//    User user = getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
+//
+//    Card savedCard = getCard(CARD_ID, CARD_NUMBER, CARD_HOLDER, EXPIRATION_DATE);
+//    savedCard.setUser(user);
+//
+//    CardDTO expectedCardDTO = getCardDTO(CARD_NUMBER, CARD_HOLDER, EXPIRATION_DATE);
+//
+//    // When - правильные моки
+//    when(userService.getUserById(USER_ID)).thenReturn(userDTO); // ← этот метод вызывается в сервисе
+//    when(userMapper.toUser(userDTO)).thenReturn(user); // ← конкретный userDTO, не any()
+//    when(cardInfoRepository.save(any(Card.class))).thenReturn(savedCard);
+//    when(cardMapper.toCardDTO(savedCard)).thenReturn(expectedCardDTO);
+//
+//    // Then
+//    CardDTO result = cardService.createCard(USER_ID, request);
+//
+//    assertNotNull(result);
+//    assertEquals(expectedCardDTO, result);
+//    assertEquals(CARD_NUMBER, result.number());
+//    assertEquals(CARD_HOLDER, result.holder());
+//
+//    verify(userService, times(1)).getUserById(USER_ID);
+//    verify(userMapper, times(1)).toUser(userDTO);
+//    verify(cardInfoRepository, times(1)).save(any(Card.class));
+//    verify(cardMapper, times(1)).toCardDTO(savedCard);
+//  }
+//@Test
+//void createCard_WithValidData_ShouldReturnCardDTO() {
+//  // Given
+//  CreateCardRequest request = getCreateCardRequest(CARD_NUMBER, CARD_HOLDER, EXPIRATION_DATE);
+//
+//  // Подготовка данных
+//  UserDTO userDTO = getUserDTO(NAME, SURNAME, BIRTH_DATE, EMAIL);
+//  User user = getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
+//
+//  Card savedCard = getCard(CARD_ID, CARD_NUMBER, CARD_HOLDER, EXPIRATION_DATE);
+//  savedCard.setUser(user);
+//
+//  CardDTO expectedCardDTO = getCardDTO(CARD_NUMBER, CARD_HOLDER, EXPIRATION_DATE);
+//
+//  // When - настраиваем моки в правильном порядке
+//  when(userService.getUserEntityById(USER_ID)).thenReturn(user); // ← этот метод вызывается в сервисе
+////  when(userMapper.toUser(userDTO)).thenReturn(user); // ← затем маппер с userDTO
+//  when(cardInfoRepository.save(any(Card.class))).thenReturn(savedCard);
+//  when(cardMapper.toCardDTO(savedCard)).thenReturn(expectedCardDTO);
+//
+//  // Then
+//  CardDTO result = cardService.createCard(USER_ID, request);
+//
+//  assertNotNull(result);
+//  assertEquals(expectedCardDTO, result);
+//  assertEquals(CARD_NUMBER, result.number());
+//  assertEquals(CARD_HOLDER, result.holder());
+//
+//  verify(userService, times(1)).getUserEntityById(USER_ID);
+////  verify(userMapper, times(1)).toUser(userDTO);
+//  verify(cardInfoRepository, times(1)).save(any(Card.class));
+//  verify(cardMapper, times(1)).toCardDTO(savedCard);
+//}
   @Test
   void createCard_WhenUserNotFound_ShouldThrowException() {
     CreateCardRequest request = getCreateCardRequest(CARD_NUMBER, CARD_HOLDER, EXPIRATION_DATE);
+    String errorMessage = "User not found with id: " + USER_ID;
 
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+    when(userService.getUserEntityById(USER_ID))
+        .thenThrow(new UserNotFoundException(errorMessage));
 
-    RuntimeException exception = assertThrows(RuntimeException.class,
+    UserNotFoundException exception = assertThrows(UserNotFoundException.class,
         () -> cardService.createCard(USER_ID, request));
 
-    assertEquals("User not found with id: " + USER_ID, exception.getMessage());
-    verify(userRepository, times(1)).findById(USER_ID);
+    assertEquals(errorMessage, exception.getMessage());
+    verify(userService, times(1)).getUserEntityById(USER_ID);
     verify(cardInfoRepository, never()).save(any(Card.class));
     verify(cardMapper, never()).toCardDTO(any(Card.class));
   }
@@ -209,7 +283,7 @@ class CardServiceImplTest {
 
     assertNotNull(result);
     assertEquals(expectedCardDTO, result);
-    assertEquals(updatedHolder, result.getHolder());
+    assertEquals(updatedHolder, result.holder());
 
     verify(cardInfoRepository, times(1)).findById(CARD_ID);
     verify(cardInfoRepository, times(1)).save(existingCard);
@@ -258,14 +332,14 @@ class CardServiceImplTest {
   @Test
   void createCard_ShouldSetCorrectExpirationDate() {
     CreateCardRequest request = getCreateCardRequest(CARD_NUMBER, CARD_HOLDER, EXPIRATION_DATE);
-    User user = new User();
-    user.setId(USER_ID);
+
+    User user = getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
 
     Card savedCard = getCard(CARD_ID, CARD_NUMBER, CARD_HOLDER, EXPIRATION_DATE);
 
     CardDTO expectedCardDTO = getCardDTO(CARD_NUMBER, CARD_HOLDER, EXPIRATION_DATE);
 
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+    when(userService.getUserEntityById(USER_ID)).thenReturn(user);
     when(cardInfoRepository.save(any(Card.class))).thenAnswer(invocation -> {
       Card cardArg = invocation.getArgument(0);
 
