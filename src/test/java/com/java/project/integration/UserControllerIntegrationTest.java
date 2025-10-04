@@ -9,7 +9,7 @@ import com.java.project.dto.user.CreateUserRequest;
 import com.java.project.dto.user.UpdateUserRequest;
 import com.java.project.dto.user.UserDTO;
 import com.java.project.entity.User;
-import com.java.project.util.UserMapper;
+import com.java.project.mapper.UserMapper;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;

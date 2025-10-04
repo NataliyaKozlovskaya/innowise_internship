@@ -8,7 +8,7 @@ import com.java.project.exception.EmailAlreadyExistsException;
 import com.java.project.exception.UserNotFoundException;
 import com.java.project.repository.UserRepository;
 import com.java.project.service.UserService;
-import com.java.project.util.UserMapper;
+import com.java.project.mapper.UserMapper;
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;

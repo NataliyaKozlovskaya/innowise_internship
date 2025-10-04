@@ -21,7 +21,7 @@ import com.java.project.exception.EmailAlreadyExistsException;
 import com.java.project.exception.UserNotFoundException;
 import com.java.project.repository.UserRepository;
 import com.java.project.service.impl.UserServiceImpl;
-import com.java.project.util.UserMapper;
+import com.java.project.mapper.UserMapper;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;

@@ -52,6 +52,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
+      JWT_SECRET: mySuperSecretKeyThatIsAtLeast32CharactersLong!
+
     ports:
       - "8090:8088"
     depends_on:
