@@ -4,9 +4,11 @@ import com.java.project.security.JwtAuthenticationEntryPoint;
 import com.java.project.security.JwtAccessDeniedHandler;
 import com.java.project.security.JwtTokenFilter;
 import com.java.project.security.JwtTokenProvider;
+import java.util.Arrays;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,9 +33,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
   private final JwtTokenProvider jwtTokenProvider;
+  private final Environment environment;
 
-  public SecurityConfig(JwtTokenProvider jwtTokenProvider) {
+  public SecurityConfig(JwtTokenProvider jwtTokenProvider, Environment environment) {
     this.jwtTokenProvider = jwtTokenProvider;
+    this.environment = environment;
   }
 
   @Bean
@@ -43,18 +47,27 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    if (Arrays.asList(environment.getActiveProfiles()).contains("test")) {
+      return http
+          .csrf(AbstractHttpConfigurer::disable)
+          .authorizeHttpRequests(auth -> auth
+              .anyRequest().permitAll()
+          )
+          .build();
+    }
     return http
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(AbstractHttpConfigurer::disable)
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers(
-                "/api/v1/auth/login",
-                "/api/v1/auth/register",
-                "/api/v1/auth/refresh",
-                "/api/v1/auth/validate"
-            ).permitAll()
-//            .anyRequest().authenticated() // off for test
+                .requestMatchers(
+                    "/api/v1/auth/login",
+                    "/api/v1/auth/register",
+                    "/api/v1/auth/refresh",
+                    "/api/v1/auth/validate"
+                ).permitAll()
+            .anyRequest().authenticated() // off for test
         )
         .addFilterBefore(
             new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
