@@ -228,16 +228,25 @@
           <version>${jacoco.version}</version>
           <executions>
             <execution>
+              <id>check</id>
+              <phase>verify</phase>
               <goals>
-                <goal>prepare-agent</goal>
+                <goal>check</goal>
               </goals>
-            </execution>
-            <execution>
-              <id>report</id>
-              <phase>test</phase>
-              <goals>
-                <goal>report</goal>
-              </goals>
+              <configuration>
+                <rules>
+                  <rule>
+                    <element>BUNDLE</element>
+                    <limits>
+                      <limit>
+                        <counter>LINE</counter>
+                        <value>MISSEDRATIO</value>
+                        <minimum>0.90</minimum>
+                      </limit>
+                    </limits>
+                  </rule>
+                </rules>
+              </configuration>
             </execution>
           </executions>
         </plugin>

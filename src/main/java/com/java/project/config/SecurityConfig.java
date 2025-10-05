@@ -1,7 +1,7 @@
 package com.java.project.config;
 
-import com.java.project.security.JwtAuthenticationEntryPoint;
 import com.java.project.security.JwtAccessDeniedHandler;
+import com.java.project.security.JwtAuthenticationEntryPoint;
 import com.java.project.security.JwtTokenFilter;
 import com.java.project.security.JwtTokenProvider;
 import java.util.Arrays;
@@ -57,17 +57,16 @@ public class SecurityConfig {
     }
     return http
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/api/v1/auth/login",
-                    "/api/v1/auth/register",
-                    "/api/v1/auth/refresh",
-                    "/api/v1/auth/validate"
-                ).permitAll()
-            .anyRequest().authenticated() // off for test
+            .requestMatchers(
+                "/api/v1/auth/login",
+                "/api/v1/auth/register",
+                "/api/v1/auth/refresh",
+                "/api/v1/auth/validate"
+            ).permitAll()
+            .anyRequest().authenticated()
         )
         .addFilterBefore(
             new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
