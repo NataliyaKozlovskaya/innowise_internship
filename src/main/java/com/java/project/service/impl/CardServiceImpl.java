@@ -9,7 +9,7 @@ import com.java.project.exception.CardNotFoundException;
 import com.java.project.repository.CardRepository;
 import com.java.project.service.CardService;
 import com.java.project.service.UserService;
-import com.java.project.util.CardMapper;
+import com.java.project.mapper.CardMapper;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;

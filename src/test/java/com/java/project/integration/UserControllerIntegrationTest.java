@@ -9,7 +9,7 @@ import com.java.project.dto.user.CreateUserRequest;
 import com.java.project.dto.user.UpdateUserRequest;
 import com.java.project.dto.user.UserDTO;
 import com.java.project.entity.User;
-import com.java.project.util.UserMapper;
+import com.java.project.mapper.UserMapper;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -24,9 +24,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 
+@ActiveProfiles("test")
 @TestPropertySource(properties = {
     "spring.cache.type=none"
 })

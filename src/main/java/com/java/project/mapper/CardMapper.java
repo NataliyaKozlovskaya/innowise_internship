@@ -1,4 +1,4 @@
-package com.java.project.util;
+package com.java.project.mapper;
 
 import com.java.project.dto.card.CardDTO;
 import com.java.project.entity.Card;
