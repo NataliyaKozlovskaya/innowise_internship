@@ -1,0 +1,50 @@
+server:
+  port: 8088
+
+# JWT Configuration
+jwt:
+  secret: "mySuperSecretKeyThatIsVeryLongAndSecure1234567890"
+  access-token:
+    expiration: 3600000    # 1 hour in milliseconds
+  refresh-token:
+    expiration: 86400000   # 24 hours in milliseconds
+
+spring:
+  application:
+    name: innowise-project
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    clear-checksums: true
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
