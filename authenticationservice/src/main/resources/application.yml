@@ -11,7 +11,16 @@ jwt:
 
 spring:
   application:
-    name: innowise-project
+    name: authentication-service
+
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 5000
+            read-timeout: 30000
+            logger-level: basic
 
   liquibase:
     enabled: true
@@ -19,7 +28,7 @@ spring:
     clear-checksums: true
 
   datasource:
-    url: ${DB_URL}
+    url: ${AUTH_DB_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -33,15 +42,19 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  data:
-    redis:
-      host: redis
-      port: 6379
+#  data:
+#    redis:
+#      host: redis
+#      port: 6379
+#
+#  cache:
+#    type: redis
+#    redis:
+#      time-to-live: 3600000
 
-  cache:
-    type: redis
-    redis:
-      time-to-live: 3600000
+user:
+  service:
+    url: ${USER_SERVICE_URL:http://localhost:8088}
 
 management:
   endpoints:

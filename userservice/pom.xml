@@ -12,11 +12,11 @@
   </parent>
 
   <groupId>com.example</groupId>
-  <artifactId>innowise_internship</artifactId>
+  <artifactId>user_service</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>my-innowise_internship</name>
+  <name>innowise_user_service</name>
   <description>My Innowise Java Project with Maven</description>
 
   <properties>

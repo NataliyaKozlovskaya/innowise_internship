@@ -2,10 +2,10 @@ version: '3.8'
 
 services:
 
-  # PostgreSQL Database
+  # PostgreSQL Database for User Service
   postgres:
     image: postgres:15-alpine
-    container_name: innowise-postgres
+    container_name: user-postgres
     environment:
       POSTGRES_DB: innowise_db
       POSTGRES_USER: postgres
@@ -13,47 +13,65 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - user_postgres_data:/var/lib/postgresql/data
     networks:
-      innowise-network:
-        aliases:
-          - postgres
+      - user-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Redis Cache
+  # PostgreSQL Database for Authentication Service
+  auth-postgres:
+    image: postgres:15-alpine
+    container_name: auth-postgres
+    environment:
+      POSTGRES_DB: innowise_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"  # Изменен порт для внешнего доступа
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+    networks:
+      - user-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache (common for services)
   redis:
     image: redis:7-alpine
-    container_name: innowise-redis
+    container_name: user-redis
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
-      - innowise-network
+      - user-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
 
-  # Spring Boot Application
-  app:
-    build: .
-    container_name: innowise-app
+  # User Service
+  user-service:
+    build:
+      context: .
+      dockerfile: userservice/Dockerfile
+    container_name: user-service
     environment:
       SERVER_PORT: 8088
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/innowise_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/user_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
-      JWT_SECRET: mySuperSecretKeyThatIsAtLeast32CharactersLong!
-
     ports:
       - "8090:8088"
     depends_on:
@@ -62,17 +80,50 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - innowise-network
+      - user-network
     healthcheck:
-      test: ["CMD-SHELL", "exit 0"]
+      test: ["CMD", "curl", "-f", "http://localhost:8088/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
+# Authentication Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: authenticationservice/Dockerfile
+    container_name: auth-service
+    environment:
+      SERVER_PORT: 8089
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      USER_SERVICE_URL: http://user-service:8088
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      JWT_SECRET: mySuperSecretKeyThatIsAtLeast32CharactersLong!
+    ports:
+      - "8091:8089"
+    depends_on:
+      auth-postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - user-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8089/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
 volumes:
-  postgres_data:
+  user_postgres_data:
+  auth_postgres_data:
   redis_data:
 
 networks:
-  innowise-network:
+  user-network:
     driver: bridge

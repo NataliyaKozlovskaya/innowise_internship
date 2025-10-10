@@ -11,7 +11,7 @@ jwt:
 
 spring:
   application:
-    name: innowise-project
+    name: user-service
 
   liquibase:
     enabled: true
