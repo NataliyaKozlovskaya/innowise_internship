@@ -115,6 +115,7 @@ jobs:
         run: |
           cd userservice
           mvn sonar:sonar \
+            -Dsonar.organization=nataliyakozlovskaya \
             -Dsonar.projectKey=user-service \
             -Dsonar.projectName='User Service' \
             -Dsonar.qualitygate.wait=false \
@@ -124,6 +125,7 @@ jobs:
           
           cd ../authenticationservice
           mvn sonar:sonar \
+            -Dsonar.organization=nataliyakozlovskaya \
             -Dsonar.projectKey=auth-service \
             -Dsonar.projectName='Auth Service' \
             -Dsonar.qualitygate.wait=false \
