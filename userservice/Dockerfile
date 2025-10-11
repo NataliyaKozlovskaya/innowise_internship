@@ -1,10 +1,10 @@
-FROM maven:3.9-eclipse-temurin-21 AS builder
-WORKDIR /app
+FROM maven:3.9.6-eclipse-temurin-21 AS builder
+WORKDIR /application
 COPY . .
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:21-jre-jammy
-WORKDIR /app
-COPY --from=builder /app/target/*.jar app.jar
+FROM eclipse-temurin:21-jre
+WORKDIR /application
+COPY --from=builder /application/target/*.jar app.jar
 EXPOSE 8088
 ENTRYPOINT ["java", "-jar", "app.jar"]

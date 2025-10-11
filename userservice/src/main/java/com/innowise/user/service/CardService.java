@@ -19,7 +19,7 @@ public interface CardService {
    * @param request card to be created
    * @return card
    */
-  CardDTO createCard(Long userId, CreateCardRequest request);
+  CardDTO createCard(String userId, CreateCardRequest request);
 
   /**
    * Find card by identifier

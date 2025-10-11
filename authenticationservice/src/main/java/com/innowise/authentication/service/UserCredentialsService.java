@@ -1,5 +1,6 @@
 package com.innowise.authentication.service;
 
+import com.innowise.authentication.dto.LoginRequest;
 import com.innowise.authentication.dto.RegisterRequest;
 import com.innowise.authentication.dto.RefreshTokenRequest;
 import com.innowise.authentication.dto.TokenResponse;
@@ -16,7 +17,7 @@ public interface UserCredentialsService {
    * @param loginRequest the login credentials containing login and password
    * @return TokenResponse containing access token and refresh token
    */
-  TokenResponse login(RegisterRequest loginRequest);
+  TokenResponse login(LoginRequest loginRequest);
 
   /**
    * Creates new user credentials with the specified login and password

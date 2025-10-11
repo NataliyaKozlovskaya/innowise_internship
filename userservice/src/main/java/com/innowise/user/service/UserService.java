@@ -26,7 +26,7 @@ public interface UserService {
    * @param id user identifier
    * @return userDTO
    */
-  UserDTO getUserById(Long id);
+  UserDTO getUserById(String id);
 
   /**
    * Find userEntity by identifier
@@ -34,7 +34,7 @@ public interface UserService {
    * @param id user identifier
    * @return user
    */
-  User getUserEntityById(Long id);
+  User getUserEntityById(String id);
 
   /**
    * Find list of users by ids
@@ -42,7 +42,7 @@ public interface UserService {
    * @param ids list of  identifiers
    * @return list of users
    */
-  List<UserDTO> getUsersByIds(List<Long> ids);
+  List<UserDTO> getUsersByIds(List<String> ids);
 
   /**
    * Find user by email
@@ -59,12 +59,12 @@ public interface UserService {
    * @param request the user object containing updated information
    * @return updated user
    */
-  UserDTO updateUser(Long id, UpdateUserRequest request);
+  UserDTO updateUser(String id, UpdateUserRequest request);
 
   /**
    * Delete user by identifier (cascade delete cards)
    *
    * @param id user identifier
    */
-  void deleteUser(Long id);
+  void deleteUser(String id);
 }

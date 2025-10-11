@@ -13,7 +13,7 @@
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="user_login" type="VARCHAR(255)">
-        <constraints nullable="false" unique="true" uniqueConstraintName="uq_user_login"/>
+        <constraints nullable="false"/>
       </column>
       <column name="role" type="VARCHAR(50)">
         <constraints nullable="false"/>

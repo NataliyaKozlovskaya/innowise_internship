@@ -12,7 +12,6 @@ import com.innowise.user.repository.UserRepository;
 import com.innowise.user.service.UserService;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
@@ -41,7 +40,7 @@ public class UserServiceImpl implements UserService {
     });
 
     User user = new User();
-    user.setUuid(UUID.fromString(request.uuid()));
+    user.setUuid(request.uuid());
     user.setName(request.name());
     user.setSurname(request.surname());
     user.setBirthDate(request.birthDate());
@@ -54,7 +53,7 @@ public class UserServiceImpl implements UserService {
   @Transactional(readOnly = true)
   @Cacheable(key = "#id", unless = "#result == null")
   @Override
-  public UserDTO getUserById(Long id) {
+  public UserDTO getUserById(String id) {
     return userRepository.findById(id)
         .map(userMapper::toUserDTO)
         .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
@@ -62,16 +61,16 @@ public class UserServiceImpl implements UserService {
 
   @Transactional(readOnly = true)
   @Override
-  public User getUserEntityById(Long id) {
+  public User getUserEntityById(String id) {
     return userRepository.findById(id)
         .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
   }
 
   @Transactional(readOnly = true)
   @Override
-  public List<UserDTO> getUsersByIds(List<Long> ids) {
+  public List<UserDTO> getUsersByIds(List<String> ids) {
 
-    List<UserDTO> result = userRepository.findByIdIn(ids).stream()
+    List<UserDTO> result = userRepository.findByIdsIn(ids).stream()
         .map(userMapper::toUserDTO)
         .toList();
 
@@ -93,7 +92,7 @@ public class UserServiceImpl implements UserService {
   @Transactional
   @CachePut(key = "#id")
   @Override
-  public UserDTO updateUser(Long id, UpdateUserRequest request) {
+  public UserDTO updateUser(String id, UpdateUserRequest request) {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
 
@@ -112,7 +111,7 @@ public class UserServiceImpl implements UserService {
   @Transactional
   @CacheEvict(key = "#id")
   @Override
-  public void deleteUser(Long id) {
+  public void deleteUser(String id) {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
 

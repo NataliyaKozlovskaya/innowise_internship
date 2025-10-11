@@ -30,7 +30,7 @@ public class Card {
   private Long id;
 
   @ManyToOne
-  @JoinColumn(name = "user_id", nullable = false)
+  @JoinColumn(name = "user_uuid", nullable = false)
   private User user;
 
   @Column(name = "number", nullable = false, unique = true)

@@ -31,9 +31,9 @@ public class UserCredentials {
 
   @Id
   @Column(name = "uuid")
-  private UUID uuid;
+  private String uuid;
 
-  @Column(name = "id", nullable = false, unique = true)
+  @Column(name = "login", nullable = false, unique = true)
   private String login;
 
   @Column(name = "password_hash", nullable = false)
@@ -48,7 +48,7 @@ public class UserCredentials {
   private LocalDateTime updatedAt;
 
   @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-  @JoinColumn(name = "user_login")
+  @JoinColumn(name = "login", referencedColumnName = "login")
   private List<UserRole> roles;
 
   public List<String> getRolesAsStrings() {

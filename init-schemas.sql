@@ -1,0 +1,2 @@
+CREATE SCHEMA IF NOT EXISTS user_schema;
+CREATE SCHEMA IF NOT EXISTS auth_schema;

@@ -47,7 +47,7 @@ public class UserController {
    * Get user by ID
    */
   @GetMapping("/{id}")
-  public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+  public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
     UserDTO response = userService.getUserById(id);
     return ResponseEntity.ok(response);
   }
@@ -56,7 +56,7 @@ public class UserController {
    * Get users by list of IDs
    */
   @GetMapping("/batch")
-  public ResponseEntity<List<UserDTO>> getUsersByIds(@RequestParam(name = "ids") List<Long> ids) {
+  public ResponseEntity<List<UserDTO>> getUsersByIds(@RequestParam(name = "ids") List<String> ids) {
     List<UserDTO> responses = userService.getUsersByIds(ids);
     return ResponseEntity.ok(responses);
   }
@@ -75,7 +75,7 @@ public class UserController {
    */
   @PatchMapping("/{id}")
   public ResponseEntity<UserDTO> updateUser(
-      @PathVariable Long id,
+      @PathVariable String id,
       @RequestBody @Valid UpdateUserRequest request) {
     UserDTO updatedUser = userService.updateUser(id, request);
     return ResponseEntity.ok(updatedUser);
@@ -85,7 +85,7 @@ public class UserController {
    * Delete user by ID
    */
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+  public ResponseEntity<Void> deleteUser(@PathVariable String id) {
     userService.deleteUser(id);
     return ResponseEntity.noContent().build();
   }

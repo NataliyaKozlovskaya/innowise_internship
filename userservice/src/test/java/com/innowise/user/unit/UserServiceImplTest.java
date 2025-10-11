@@ -10,19 +10,20 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.innowise.user.dto.user.CreateUserRequest;
+import com.innowise.user.dto.user.UpdateUserRequest;
+import com.innowise.user.dto.user.UserDTO;
+import com.innowise.user.entity.User;
+import com.innowise.user.exception.EmailAlreadyExistsException;
+import com.innowise.user.exception.UserNotFoundException;
+import com.innowise.user.mapper.UserMapper;
+import com.innowise.user.repository.UserRepository;
+import com.innowise.user.service.impl.UserServiceImpl;
 import com.innowise.user.util.TestDataFactory;
-import com.java.project.userservice.dto.user.CreateUserRequest;
-import com.java.project.userservice.dto.user.UpdateUserRequest;
-import com.java.project.userservice.dto.user.UserDTO;
-import com.java.project.userservice.entity.User;
-import com.java.project.userservice.exception.EmailAlreadyExistsException;
-import com.java.project.authenticationservice.exception.UserNotFoundException;
-import com.java.project.userservice.repository.UserRepository;
-import com.java.project.userservice.service.impl.UserServiceImpl;
-import com.java.project.userservice.mapper.UserMapper;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,6 +33,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
 
+  private final UUID USER_ID = UUID.randomUUID();
+  private final String EMAIL = "test@example.com";
+  private final String NAME = "Mark";
+  private final String SURNAME = "Staf";
+  private final LocalDate BIRTH_DATE = LocalDate.of(1990, 1, 1);
+
   @Mock
   private UserRepository userRepository;
   @Mock
@@ -39,17 +46,10 @@ class UserServiceImplTest {
   @InjectMocks
   private UserServiceImpl userService;
 
-  private final Long USER_ID = 1L;
-  private final String EMAIL = "test@example.com";
-  private final String NAME = "Mark";
-  private final String SURNAME = "Staf";
-  private final LocalDate BIRTH_DATE = LocalDate.of(1990, 1, 1);
-
-
   @Test
   void createUser_ShouldCreateUserSuccessfully() {
-    CreateUserRequest request = TestDataFactory.getCreateUserRequest(NAME, SURNAME, BIRTH_DATE, EMAIL);
-
+    CreateUserRequest request = TestDataFactory.getCreateUserRequest(USER_ID.toString(), NAME,
+        SURNAME, BIRTH_DATE, EMAIL);
     User savedUser = TestDataFactory.getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
     UserDTO expectedDTO = TestDataFactory.getUserDTO(NAME, SURNAME, BIRTH_DATE, EMAIL);
 
@@ -61,7 +61,6 @@ class UserServiceImplTest {
 
     assertNotNull(result);
     assertEquals(expectedDTO.email(), result.email());
-
     verify(userRepository).findByEmail(EMAIL);
     verify(userRepository).save(any(User.class));
     verify(userMapper).toUserDTO(savedUser);
@@ -69,7 +68,8 @@ class UserServiceImplTest {
 
   @Test
   void createUser_ShouldThrowEmailAlreadyExistsException() {
-    CreateUserRequest request = TestDataFactory.getCreateUserRequest(NAME, SURNAME, BIRTH_DATE, EMAIL);
+    CreateUserRequest request = TestDataFactory.getCreateUserRequest(USER_ID.toString(), NAME,
+        SURNAME, BIRTH_DATE, EMAIL);
     User existingUser = TestDataFactory.getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
 
     when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(existingUser));
@@ -84,36 +84,37 @@ class UserServiceImplTest {
     User user = TestDataFactory.getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
     UserDTO expectedDTO = TestDataFactory.getUserDTO(NAME, SURNAME, BIRTH_DATE, EMAIL);
 
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+    when(userRepository.findById("1")).thenReturn(Optional.of(user));
     when(userMapper.toUserDTO(user)).thenReturn(expectedDTO);
 
-    UserDTO result = userService.getUserById(USER_ID);
+    UserDTO result = userService.getUserById("1");
 
     assertNotNull(result);
-    verify(userRepository).findById(USER_ID);
+    verify(userRepository).findById("1");
     verify(userMapper).toUserDTO(user);
   }
 
   @Test
   void getUserById_ShouldThrowUserNotFoundException() {
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+    when(userRepository.findById("1")).thenReturn(Optional.empty());
 
-    assertThrows(UserNotFoundException.class, () -> userService.getUserById(USER_ID));
-    verify(userRepository).findById(USER_ID);
+    assertThrows(UserNotFoundException.class, () -> userService.getUserById("1"));
+    verify(userRepository).findById("1");
     verify(userMapper, never()).toUserDTO(any());
   }
 
   @Test
   void getUsersByIds_ShouldReturnListOfUserDTOs() {
-    List<Long> ids = List.of(1L, 2L, 3L);
-
-    User user1 = TestDataFactory.getUser(1L, "Ivan", "Ivanov", LocalDate.of(1981, 3, 12), "ivan@example.com");
-    User user2 = TestDataFactory.getUser(2L, "Petr", "Ilir", LocalDate.of(1996, 5, 10), "petr@example.com");
+    List<String> ids = List.of("1", "2", "3");
+    User user1 = TestDataFactory.getUser(USER_ID, "Ivan", "Ivanov", LocalDate.of(1981, 3, 12),
+        "ivan@example.com");
+    User user2 = TestDataFactory.getUser(USER_ID, "Petr", "Ilir", LocalDate.of(1996, 5, 10),
+        "petr@example.com");
 
     UserDTO dto1 = TestDataFactory.getUserDTO("Ivan", "Ivanov", BIRTH_DATE, "ivan@example.com");
     UserDTO dto2 = TestDataFactory.getUserDTO("Petr", "Ilir", BIRTH_DATE, "petr@example.com");
 
-    when(userRepository.findByIdIn(ids)).thenReturn(List.of(user1, user2));
+    when(userRepository.findByIdsIn(ids)).thenReturn(List.of(user1, user2));
     when(userMapper.toUserDTO(user1)).thenReturn(dto1);
     when(userMapper.toUserDTO(user2)).thenReturn(dto2);
 
@@ -121,23 +122,24 @@ class UserServiceImplTest {
 
     assertNotNull(result);
     assertEquals(2, result.size());
-    verify(userRepository).findByIdIn(ids);
+    verify(userRepository).findByIdsIn((ids));
     verify(userMapper, times(2)).toUserDTO(any(User.class));
   }
 
   @Test
   void getUsersByIds_ShouldThrowUserNotFoundException_WhenNoUsersFound() {
-    List<Long> ids = List.of(1L, 2L, 3L);
-    when(userRepository.findByIdIn(ids)).thenReturn(List.of());
+    List<String> ids = List.of("1", "2", "3");
+
+    when(userRepository.findByIdsIn(ids)).thenReturn(List.of());
 
     assertThrows(UserNotFoundException.class, () -> userService.getUsersByIds(ids));
-    verify(userRepository).findByIdIn(ids);
+    verify(userRepository).findByIdsIn(ids);
     verify(userMapper, never()).toUserDTO(any());
   }
 
   @Test
   void getUserByEmail_ShouldReturnUserDTO() {
-    User user = TestDataFactory.getUser(1L, NAME, SURNAME, BIRTH_DATE, EMAIL);
+    User user = TestDataFactory.getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
 
     UserDTO expectedDTO = TestDataFactory.getUserDTO(NAME, SURNAME, BIRTH_DATE, EMAIL);
     when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
@@ -164,11 +166,12 @@ class UserServiceImplTest {
   void updateUser_ShouldUpdateUserSuccessfully() {
     UpdateUserRequest request = new UpdateUserRequest("NewName", "NewSurname", "new@example.com");
 
-    User user = TestDataFactory.getUser(1L, NAME, SURNAME, BIRTH_DATE, EMAIL);
+    User user = TestDataFactory.getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
 
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+    when(userRepository.findById("1")).thenReturn(Optional.of(user));
 
-    when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.<User>getArgument(0));
+    when(userRepository.save(any(User.class))).thenAnswer(
+        invocation -> invocation.<User>getArgument(0));
 
     when(userMapper.toUserDTO(any(User.class))).thenAnswer(invocation -> {
       User userToMap = invocation.getArgument(0);
@@ -176,18 +179,13 @@ class UserServiceImplTest {
           userToMap.getBirthDate(), userToMap.getEmail());
     });
 
-    UserDTO result = userService.updateUser(USER_ID, request);
+    UserDTO result = userService.updateUser("1", request);
 
     assertNotNull(result);
     assertEquals("NewName", result.name());
     assertEquals("new@example.com", result.email());
     assertEquals("NewSurname", result.surname());
-
-    assertEquals("NewName", user.getName());
-    assertEquals("NewSurname", user.getSurname());
-    assertEquals("new@example.com", user.getEmail());
-
-    verify(userRepository).findById(USER_ID);
+    verify(userRepository).findById("1");
     verify(userRepository).save(user);
     verify(userMapper).toUserDTO(user);
   }
@@ -195,17 +193,17 @@ class UserServiceImplTest {
   @Test
   void updateUser_ShouldEvictEmailCache_WhenEmailChanged() {
     UpdateUserRequest request = new UpdateUserRequest(null, null, "new@example.com");
-
     User existingUser = TestDataFactory.getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
-    UserDTO expectedDTO = TestDataFactory.getUserDTO("NewName", "NewSurname", BIRTH_DATE, "new@example.com");
+    UserDTO expectedDTO = TestDataFactory.getUserDTO("NewName", "NewSurname", BIRTH_DATE,
+        "new@example.com");
 
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(existingUser));
+    when(userRepository.findById("1")).thenReturn(Optional.of(existingUser));
     when(userRepository.save(any(User.class))).thenReturn(existingUser);
     when(userMapper.toUserDTO(any(User.class))).thenReturn(expectedDTO);
 
-    userService.updateUser(USER_ID, request);
+    userService.updateUser("1", request);
 
-    verify(userRepository).findById(USER_ID);
+    verify(userRepository).findById("1");
     verify(userRepository).save(existingUser);
   }
 
@@ -213,10 +211,10 @@ class UserServiceImplTest {
   void updateUser_ShouldThrowUserNotFoundException() {
     UpdateUserRequest request = new UpdateUserRequest("NewName", null, null);
 
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+    when(userRepository.findById("1")).thenReturn(Optional.empty());
 
-    assertThrows(UserNotFoundException.class, () -> userService.updateUser(USER_ID, request));
-    verify(userRepository).findById(USER_ID);
+    assertThrows(UserNotFoundException.class, () -> userService.updateUser("1", request));
+    verify(userRepository).findById("1");
     verify(userRepository, never()).save(any());
   }
 
@@ -224,21 +222,21 @@ class UserServiceImplTest {
   void deleteUser_ShouldDeleteUserSuccessfully() {
     User user = TestDataFactory.getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
 
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+    when(userRepository.findById("1")).thenReturn(Optional.of(user));
     doNothing().when(userRepository).delete(user);
 
-    userService.deleteUser(USER_ID);
+    userService.deleteUser("1");
 
-    verify(userRepository).findById(USER_ID);
+    verify(userRepository).findById("1");
     verify(userRepository).delete(user);
   }
 
   @Test
   void deleteUser_ShouldThrowException_WhenUserNotFound() {
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+    when(userRepository.findById("1")).thenReturn(Optional.empty());
 
-    assertThrows(RuntimeException.class, () -> userService.deleteUser(USER_ID));
-    verify(userRepository).findById(USER_ID);
+    assertThrows(RuntimeException.class, () -> userService.deleteUser("1"));
+    verify(userRepository).findById("1");
     verify(userRepository, never()).delete(any());
   }
 }

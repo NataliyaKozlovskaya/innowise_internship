@@ -56,6 +56,7 @@ public class SecurityConfig {
           .build();
     }
     return http
+        .csrf(csrf -> csrf.disable())
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -64,7 +65,8 @@ public class SecurityConfig {
                 "/api/v1/auth/login",
                 "/api/v1/auth/register",
                 "/api/v1/auth/refresh",
-                "/api/v1/auth/validate"
+                "/api/v1/auth/validate",
+                "/actuator/health"
             ).permitAll()
             .anyRequest().authenticated()
         )

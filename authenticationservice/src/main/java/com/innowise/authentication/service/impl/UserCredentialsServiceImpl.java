@@ -1,21 +1,21 @@
 package com.innowise.authentication.service.impl;
 
-import com.innowise.authentication.dto.RegisterRequest;
+import com.innowise.authentication.dto.CreateUserRequest;
+import com.innowise.authentication.dto.LoginRequest;
 import com.innowise.authentication.dto.RefreshTokenRequest;
+import com.innowise.authentication.dto.RegisterRequest;
 import com.innowise.authentication.dto.TokenResponse;
 import com.innowise.authentication.dto.TokenValidationResponse;
-import com.innowise.authentication.dto.CreateUserRequest;
 import com.innowise.authentication.entity.UserCredentials;
 import com.innowise.authentication.entity.UserRole;
 import com.innowise.authentication.exception.InvalidTokenException;
 import com.innowise.authentication.exception.UserAlreadyExistsException;
 import com.innowise.authentication.exception.UserCreationException;
-import com.innowise.authentication.feign.UserServiceClient;
-import com.innowise.authentication.service.UserCredentialsService;
-
 import com.innowise.authentication.repository.UserCredentialsRepository;
 import com.innowise.authentication.repository.UserRoleRepository;
+import com.innowise.authentication.rest.UserServiceClient;
 import com.innowise.authentication.security.JwtTokenProvider;
+import com.innowise.authentication.service.UserCredentialsService;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -32,13 +32,14 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
   private static final String ROLE = "ROLE_USER";
   private final UserCredentialsRepository userCredentialsRepository;
   private final UserRoleRepository userRoleRepository;
-  private  final UserServiceClient userServiceClient;
+  private final UserServiceClient userServiceClient;
   private final PasswordEncoder passwordEncoder;
   private final JwtTokenProvider jwtTokenProvider;
 
 
   public UserCredentialsServiceImpl(UserCredentialsRepository userCredentialsRepository,
-      UserRoleRepository userRoleRepository, UserServiceClient userServiceClient, PasswordEncoder passwordEncoder,
+      UserRoleRepository userRoleRepository, UserServiceClient userServiceClient,
+      PasswordEncoder passwordEncoder,
       JwtTokenProvider jwtTokenProvider
   ) {
     this.userCredentialsRepository = userCredentialsRepository;
@@ -49,22 +50,21 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
   }
 
   @Override
-  public TokenResponse login(RegisterRequest loginRequest) {
+  public TokenResponse login(LoginRequest loginRequest) {
     log.info("Login attempt for user: {}", loginRequest.login());
 
-    if (validateCredentials(loginRequest.login(), loginRequest.password())) {
-      UserCredentials user = userCredentialsRepository.findById(loginRequest.login())
-          .orElseThrow(() -> new BadCredentialsException("User not found"));
+    UserCredentials user = userCredentialsRepository.findByLogin(loginRequest.login())
+        .orElseThrow(() -> new BadCredentialsException("User not found"));
 
-      List<String> authorities = user.getRolesAsStrings();
-
-      String accessToken = jwtTokenProvider.generateAccessToken(loginRequest.login(), authorities);
-      String refreshToken = jwtTokenProvider.generateRefreshToken(loginRequest.login());
-
-      return new TokenResponse(accessToken, refreshToken);
-    } else {
-      throw new BadCredentialsException("Invalid login or password");
+    if (!passwordEncoder.matches(loginRequest.password(), user.getPasswordHash())) {
+      throw new BadCredentialsException("Invalid password");
     }
+
+    List<String> authorities = user.getRolesAsStrings();
+    String accessToken = jwtTokenProvider.generateAccessToken(loginRequest.login(), authorities);
+    String refreshToken = jwtTokenProvider.generateRefreshToken(loginRequest.login());
+
+    return new TokenResponse(accessToken, refreshToken);
   }
 
   @Override
@@ -89,6 +89,7 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
     }
 
     UserCredentials credentials = new UserCredentials();
+    credentials.setUuid(userId);
     credentials.setLogin(request.login());
     credentials.setPasswordHash(passwordEncoder.encode(request.password()));
 
@@ -135,11 +136,5 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
     } else {
       throw new InvalidTokenException("Invalid refresh token");
     }
-  }
-
-  private boolean validateCredentials(String login, String plainPassword) {
-    return userCredentialsRepository.findById(login)
-        .map(credentials -> passwordEncoder.matches(plainPassword, credentials.getPasswordHash()))
-        .orElse(false);
   }
 }

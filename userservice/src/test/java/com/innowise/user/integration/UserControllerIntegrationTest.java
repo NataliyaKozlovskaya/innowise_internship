@@ -4,15 +4,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.innowise.user.dto.user.CreateUserRequest;
+import com.innowise.user.dto.user.UpdateUserRequest;
+import com.innowise.user.dto.user.UserDTO;
+import com.innowise.user.entity.User;
+import com.innowise.user.mapper.UserMapper;
 import com.innowise.user.util.TestDataFactory;
-import com.java.project.userservice.dto.user.CreateUserRequest;
-import com.java.project.userservice.dto.user.UpdateUserRequest;
-import com.java.project.userservice.dto.user.UserDTO;
-import com.java.project.userservice.entity.User;
-import com.java.project.userservice.mapper.UserMapper;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
   @Autowired
   private UserMapper userMapper;
 
+  private final UUID uuid = UUID.randomUUID();
   private final String EMAIL = "test@example.com";
   private final String NAME = "Mark";
   private final String SURNAME = "Staf";
@@ -53,7 +55,8 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
   @Test
   @Sql(statements = "DELETE FROM users", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   void createUser_WithValidData_ShouldReturnCreatedUser() {
-    CreateUserRequest request = TestDataFactory.getCreateUserRequest(NAME, SURNAME, BIRTH_DATE, EMAIL);
+    CreateUserRequest request = TestDataFactory.getCreateUserRequest(uuid.toString(), NAME, SURNAME,
+        BIRTH_DATE, EMAIL);
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
@@ -75,7 +78,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   @Sql(statements = {
-      "INSERT INTO users (id, name, surname, email, birth_date) VALUES (121, 'Anna', 'Holl', 'annaaa@example.com', '1990-01-01')"
+      "INSERT INTO users (uuid, name, surname, email, birth_date) VALUES (121, 'Anna', 'Holl', 'annaaa@example.com', '1990-01-01')"
   }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(statements = "DELETE FROM users", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   void getUserById_WithExistingId_ShouldReturnUser() {
@@ -94,7 +97,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
   @Test
   void testMapperDirectly() {
     User user = new User();
-    user.setId(121L);
+    user.setUuid(UUID.randomUUID().toString());
     user.setName("Anna");
     user.setSurname("Holl");
     user.setEmail("annaaa@example.com");
@@ -118,10 +121,10 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   @Sql(statements = {
-      "INSERT INTO users (id, name, surname, email, birth_date) VALUES " +
-          "(1, 'Anna', 'Holl', 'anna@example.com', '1990-01-01'), " +
-          "(2, 'Olga', 'Smyth', 'olga@example.com', '1991-02-02'), " +
-          "(3, 'Alex', 'Vasin', 'alex@example.com', '1992-03-03')"
+      "INSERT INTO users (uuid, name, surname, email, birth_date) VALUES " +
+          "('1', 'Anna', 'Holl', 'anna@example.com', '1990-01-01'), " +
+          "('2', 'Olga', 'Smyth', 'olga@example.com', '1991-02-02'), " +
+          "('3', 'Alex', 'Vasin', 'alex@example.com', '1992-03-03')"
   }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(statements = "DELETE FROM users", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   void getUsersByIds_WithExistingIds_ShouldReturnUsers() {
@@ -136,15 +139,15 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
     assertEquals(2, response.getBody().length);
 
     List<UserDTO> users = Arrays.asList(response.getBody());
-    assertTrue(users.stream().noneMatch(u -> u.email().equals(1L)));
-    assertTrue(users.stream().noneMatch(u -> u.email().equals(2L)));
+    assertTrue(users.stream().noneMatch(u -> u.email().equals("test1@gmail.com")));
+    assertTrue(users.stream().noneMatch(u -> u.email().equals("test2@gmail.com")));
   }
 
   @Test
   @Sql(statements = {
-      "INSERT INTO users (id, name, surname, email, birth_date) VALUES (1, 'Anna', 'Holl', 'anna@example.com', '1990-01-01')"
+      "INSERT INTO users (uuid, name, surname, email, birth_date) VALUES (1, 'Anna', 'Holl', 'anna@example.com', '1990-01-01')"
   }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-  @Sql(statements = "DELETE FROM users", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+  @Sql(statements = "DELETE FROM public.users", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   void getUserByEmail_WithExistingEmail_ShouldReturnUser() {
     ResponseEntity<UserDTO> response = restTemplate.exchange(
         baseUrl + "/email?email=anna@example.com",
@@ -162,7 +165,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   @Sql(statements = {
-      "INSERT INTO users (id, name, surname, email, birth_date) VALUES (1, 'Anna', 'Holl', 'anna@example.com', '1990-01-01')"
+      "INSERT INTO users (uuid, name, surname, email, birth_date) VALUES (1, 'Anna', 'Holl', 'anna@example.com', '1990-01-01')"
   }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(statements = "DELETE FROM users", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   void updateUser_WithValidData_ShouldReturnUpdatedUser() {
@@ -190,7 +193,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   @Sql(statements = {
-      "INSERT INTO users (id, name, surname, email, birth_date) VALUES (141, 'Anna', 'Holl', 'anna@example.com','1990-01-01')"
+      "INSERT INTO users (uuid, name, surname, email, birth_date) VALUES (141, 'Anna', 'Holl', 'anna@example.com','1990-01-01')"
   }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(statements = "DELETE FROM users", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   void deleteUser_WithExistingId_ShouldReturnNoContent() {
@@ -212,7 +215,8 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void createUser_WithInvalidData_ShouldReturnBadRequest() {
-    CreateUserRequest request = TestDataFactory.getCreateUserRequest(NAME, SURNAME, LocalDate.now().plusDays(1),
+    CreateUserRequest request = TestDataFactory.getCreateUserRequest(uuid.toString(), NAME, SURNAME,
+        LocalDate.now().plusDays(1),
         EMAIL);
 
     HttpHeaders headers = new HttpHeaders();
@@ -231,11 +235,13 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   @Sql(statements = {
-      "INSERT INTO users (id, name, surname, email, birth_date) VALUES (11, 'Anna', 'Holl', 'annaTT@gmail.com', '1990-01-01')"
+      "INSERT INTO users (uuid, name, surname, email, birth_date) VALUES (11, 'Anna', 'Holl', 'annaTT@gmail.com', '1990-01-01')"
   }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(statements = "DELETE FROM users", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   void createUser_WithDuplicateEmail_ShouldReturnConflict() {
-    CreateUserRequest request = TestDataFactory.getCreateUserRequest(NAME, SURNAME, BIRTH_DATE, "annaTT@gmail.com");
+    CreateUserRequest request = TestDataFactory.getCreateUserRequest(uuid.toString(), NAME, SURNAME,
+        BIRTH_DATE,
+        "annaTT@gmail.com");
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);

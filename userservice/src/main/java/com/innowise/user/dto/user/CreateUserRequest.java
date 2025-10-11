@@ -9,9 +9,8 @@ public record CreateUserRequest(
     @NotBlank(message = "Id is required") String uuid,
     @NotBlank(message = "Name is required") String name,
     @NotBlank(message = "Surname is required") String surname,
-    @NotBlank(message = "Email is required")
     @Past(message = "Birth date must be in the past") LocalDate birthDate,
     @Email(message = "Email should be valid") String email
-    ) {
+) {
 
 }

@@ -3,7 +3,7 @@
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
 
 
   <changeSet id="002-1" author="NAKozlovskaya">
@@ -31,12 +31,12 @@
   <changeSet id="002-2" author="NAKozlovskaya">
     <comment>Create index for users table</comment>
 
-    <createIndex tableName="users" schemaName="user_schema" indexName="idx_user_id">
-      <column name="id"/>
+    <createIndex tableName="users" schemaName="user_schema" indexName="idx_user_uuid">
+      <column name="uuid" type="VARCHAR(255)"/>
     </createIndex>
 
     <rollback>
-      <dropIndex tableName="users" schemaName="user_schema" indexName="idx_user_id"/>
+      <dropIndex tableName="users" schemaName="user_schema" indexName="idx_user_uuid"/>
     </rollback>
   </changeSet>
 
@@ -44,7 +44,7 @@
     <comment>Create index for users table</comment>
 
     <createIndex tableName="users"  schemaName="user_schema" indexName="idx_user_email">
-      <column name="email"/>
+      <column name="email" type="VARCHAR(255)"/>
     </createIndex>
 
     <rollback>

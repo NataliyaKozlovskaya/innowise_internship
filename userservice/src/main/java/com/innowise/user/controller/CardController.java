@@ -38,7 +38,7 @@ public class CardController {
    * Create a new card
    */
   @PostMapping
-  public ResponseEntity<CardDTO> createCard(@RequestParam(name = "userId") Long userId,
+  public ResponseEntity<CardDTO> createCard(@RequestParam(name = "userId") String userId,
       @Valid @RequestBody CreateCardRequest request) {
     CardDTO createdCard = cardService.createCard(userId, request);
     return ResponseEntity.status(HttpStatus.CREATED).body(createdCard);

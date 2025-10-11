@@ -3,15 +3,12 @@ package com.innowise.user.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -33,7 +30,7 @@ public class User {
 
   @Id
   @Column(name = "uuid", nullable = false, unique = true)
-  private UUID uuid;
+  private String uuid;
 
   @Column(name = "name", nullable = false)
   private String name;
@@ -48,5 +45,6 @@ public class User {
   private String email;
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Column(name = "cards")
   private List<Card> cards = new ArrayList<>();
 }

@@ -1,5 +1,6 @@
 package com.innowise.authentication.controller;
 
+import com.innowise.authentication.dto.LoginRequest;
 import com.innowise.authentication.dto.RegisterRequest;
 import com.innowise.authentication.dto.RefreshTokenRequest;
 import com.innowise.authentication.dto.TokenResponse;
@@ -35,7 +36,7 @@ public class AuthenticationController {
    * Authenticates a user and returns JWT tokens upon successful login
    */
   @PostMapping("/login")
-  public ResponseEntity<TokenResponse> login(@Valid @RequestBody RegisterRequest loginRequest) {
+  public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
     TokenResponse response = userCredentialsService.login(loginRequest);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }

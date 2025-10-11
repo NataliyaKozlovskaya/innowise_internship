@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.innowise.user.dto.card.CardDTO;
+import com.innowise.user.dto.card.CreateCardRequest;
+import com.innowise.user.dto.card.UpdateCardRequest;
 import com.innowise.user.util.TestDataFactory;
-import com.java.project.userservice.dto.card.CardDTO;
-import com.java.project.userservice.dto.card.CreateCardRequest;
-import com.java.project.userservice.dto.card.UpdateCardRequest;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +21,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
@@ -39,15 +40,19 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
   @BeforeEach
   void setUp() {
     baseUrl = "/api/v1/cards";
+    restTemplate.getRestTemplate().setRequestFactory(
+        new HttpComponentsClientHttpRequestFactory()
+    );
   }
 
   @Test
   @Sql(statements = {
-      "INSERT INTO users (id, name, surname, email, birth_date) VALUES (1, 'Petr', 'Ivanov', 'petro@gmail.com', '1990-01-01')"
+      "INSERT INTO users (uuid, name, surname, email, birth_date) VALUES (1, 'Petr', 'Ivanov', 'petro@gmail.com', '1990-01-01')"
   }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(statements = "DELETE FROM card_info; DELETE FROM users", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   void createCard_WithValidData_ShouldReturnCreatedCard() {
-    CreateCardRequest request = TestDataFactory.getCreateCardRequest("1234567890123456", "Petr Ivanov",
+    CreateCardRequest request = TestDataFactory.getCreateCardRequest("1234567890123456",
+        "Petr Ivanov",
         LocalDate.now().plusYears(4));
 
     HttpHeaders headers = new HttpHeaders();
@@ -71,9 +76,9 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   @Sql(statements = {
-      "INSERT INTO users (id, name, surname, email, birth_date) VALUES " +
+      "INSERT INTO users (uuid, name, surname, email, birth_date) VALUES " +
           "(1, 'Max', 'Nio', 'max@example.com', '1990-01-01')",
-      "INSERT INTO card_info (id, number, holder, expiration_date, user_id) VALUES " +
+      "INSERT INTO card_info (id, number, holder, expiration_date, user_uuid) VALUES " +
           "(1, '1234567890123456', 'Max Nio', '2026-12-31', 1)"
   }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(statements = "DELETE FROM card_info; DELETE FROM users", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -101,9 +106,9 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   @Sql(statements = {
-      "INSERT INTO users (id, name, surname, email, birth_date) VALUES " +
+      "INSERT INTO users (uuid, name, surname, email, birth_date) VALUES " +
           "(1, 'Mark', 'Nio', 'mark@example.com', '1990-07-01')",
-      "INSERT INTO card_info (id, number, holder, expiration_date, user_id) VALUES " +
+      "INSERT INTO card_info (id, number, holder, expiration_date, user_uuid) VALUES " +
           "(1, '1111222233334444', 'Mark DOE', '2026-12-31', 1), " +
           "(2, '5555666677778888', 'Mark SMITH', '2027-06-30', 1), " +
           "(3, '9999000011112222', 'Mark JOHNSON', '2028-01-31', 1)"
@@ -128,9 +133,9 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   @Sql(statements = {
-      "INSERT INTO users (id, name, surname, email, birth_date) VALUES " +
+      "INSERT INTO users (uuid, name, surname, email, birth_date) VALUES " +
           "(2, 'Mark', 'Nio', 'markPP@example.com', '1990-07-01')",
-      "INSERT INTO card_info (id, number, holder, expiration_date, user_id) VALUES " +
+      "INSERT INTO card_info (id, number, holder, expiration_date, user_uuid) VALUES " +
           "(1, '1234567890123456', 'Mark Nio', '2026-12-31', 2)"
   }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(statements = "DELETE FROM card_info; DELETE FROM users", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -141,8 +146,9 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
     headers.setContentType(MediaType.APPLICATION_JSON);
     HttpEntity<UpdateCardRequest> entity = new HttpEntity<>(request, headers);
 
+    String url = baseUrl + "/" + "1";
     ResponseEntity<CardDTO> response = restTemplate.exchange(
-        baseUrl + "/1",
+        url,
         HttpMethod.PATCH,
         entity,
         CardDTO.class
@@ -157,9 +163,9 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   @Sql(statements = {
-      "INSERT INTO users (id, name, surname, email, birth_date) VALUES " +
+      "INSERT INTO users (uuid, name, surname, email, birth_date) VALUES " +
           "(41, 'Mark', 'Nio', 'mark@example.com', '1990-07-01')",
-      "INSERT INTO card_info (id, number, holder, expiration_date, user_id) VALUES " +
+      "INSERT INTO card_info (id, number, holder, expiration_date, user_uuid) VALUES " +
           "(1, '1234567890123456', 'Mark Nio', '2026-12-31', 41)"
   }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(statements = "DELETE FROM card_info; DELETE FROM users", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -183,7 +189,8 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void createCard_WithInvalidUserId_ShouldReturnBadRequest() {
-    CreateCardRequest request = TestDataFactory.getCreateCardRequest("1234560090123456", "Anna Ivanova",
+    CreateCardRequest request = TestDataFactory.getCreateCardRequest("1234560090123456",
+        "Anna Ivanova",
         LocalDate.now().plusYears(2));
 
     HttpHeaders headers = new HttpHeaders();
@@ -202,7 +209,7 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   @Sql(statements = {
-      "INSERT INTO users (id, name, surname, email, birth_date) VALUES " +
+      "INSERT INTO users (uuid, name, surname, email, birth_date) VALUES " +
           "(1, 'Mark', 'Nio', 'mark@example.com', '1990-07-01')"
   }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   void createCard_WithInvalidCardNumber_ShouldReturnBadRequest() {
@@ -225,9 +232,9 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   @Sql(statements = {
-      "INSERT INTO users (id, name, surname, email, birth_date) VALUES " +
+      "INSERT INTO users (uuid, name, surname, email, birth_date) VALUES " +
           "(41, 'Mark', 'Nio', 'mark@example.com', '1990-07-01')",
-      "INSERT INTO card_info (id, number, holder, expiration_date, user_id) VALUES " +
+      "INSERT INTO card_info (id, number, holder, expiration_date, user_uuid) VALUES " +
           "(1, '1234567890123456', 'Mark Nio', '2026-12-31', 41)"
   }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(statements = "DELETE FROM card_info; DELETE FROM users", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -239,8 +246,9 @@ class CardControllerIntegrationTest extends AbstractIntegrationTest {
     headers.setContentType(MediaType.APPLICATION_JSON);
     HttpEntity<UpdateCardRequest> entity = new HttpEntity<>(request, headers);
 
+    String url = baseUrl + "/" + "11111";
     ResponseEntity<String> response = restTemplate.exchange(
-        baseUrl + "/969",
+        url,
         HttpMethod.PATCH,
         entity,
         String.class

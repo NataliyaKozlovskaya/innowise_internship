@@ -29,7 +29,7 @@ public class CardServiceImpl implements CardService {
 
   @Transactional
   @Override
-  public CardDTO createCard(Long userId, CreateCardRequest request) {
+  public CardDTO createCard(String userId, CreateCardRequest request) {
     User user = userService.getUserEntityById(userId);
 
     Card card = new Card();

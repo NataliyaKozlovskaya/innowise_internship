@@ -1,12 +1,13 @@
 package com.innowise.user.util;
 
-import com.java.project.userservice.dto.card.CardDTO;
-import com.java.project.userservice.dto.card.CreateCardRequest;
-import com.java.project.userservice.dto.user.CreateUserRequest;
-import com.java.project.userservice.dto.user.UserDTO;
-import com.java.project.userservice.entity.Card;
-import com.java.project.userservice.entity.User;
+import com.innowise.user.dto.card.CardDTO;
+import com.innowise.user.dto.card.CreateCardRequest;
+import com.innowise.user.dto.user.CreateUserRequest;
+import com.innowise.user.dto.user.UserDTO;
+import com.innowise.user.entity.Card;
+import com.innowise.user.entity.User;
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * Factory class for creating test data objects used in unit tests and integration tests
@@ -16,18 +17,19 @@ public final class TestDataFactory {
   private TestDataFactory() {
   }
 
-  public static CreateUserRequest getCreateUserRequest(String name, String surname, LocalDate date,
+  public static CreateUserRequest getCreateUserRequest(String uuid, String name, String surname,
+      LocalDate date,
       String email) {
-    return new CreateUserRequest(name, surname, email, date);
+    return new CreateUserRequest(uuid, name, surname, date, email);
   }
 
   public static UserDTO getUserDTO(String name, String surname, LocalDate date, String email) {
     return new UserDTO(surname, name, date, email);
   }
 
-  public static User getUser(Long id, String name, String surname, LocalDate date, String email) {
+  public static User getUser(UUID uuid, String name, String surname, LocalDate date, String email) {
     User user = new User();
-    user.setId(id);
+    user.setUuid(uuid.toString());
     user.setSurname(surname);
     user.setName(name);
     user.setBirthDate(date);

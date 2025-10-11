@@ -1,5 +1,5 @@
 server:
-  port: 8088
+  port: 8089
 
 # JWT Configuration
 jwt:
@@ -13,48 +13,32 @@ spring:
   application:
     name: authentication-service
 
-  cloud:
-    openfeign:
-      client:
-        config:
-          default:
-            connect-timeout: 5000
-            read-timeout: 30000
-            logger-level: basic
-
   liquibase:
-    enabled: true
+    enabled: false
+    default-schema: auth_schema
+    liquibase-schema: auth_schema
     change-log: classpath:db/changelog/db.changelog-master.xml
     clear-checksums: true
 
   datasource:
-    url: ${AUTH_DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://postgres:5432/innowise_db?currentSchema=auth_schema
+    username: postgres
+    password: postgres
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:
+        default_schema: auth_schema
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-#  data:
-#    redis:
-#      host: redis
-#      port: 6379
-#
-#  cache:
-#    type: redis
-#    redis:
-#      time-to-live: 3600000
-
-user:
-  service:
-    url: ${USER_SERVICE_URL:http://localhost:8088}
+service:
+  user:
+    url: http://user-service:8088
 
 management:
   endpoints:
