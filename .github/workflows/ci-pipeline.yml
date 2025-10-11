@@ -43,7 +43,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [ user-service, auth-service ]
+        service: [ userservice, authenticationservice ]
 
     steps:
       - name: Checkout code
@@ -139,7 +139,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [user-service, auth-service]
+        service: [userservice, authenticationservice]
 
     steps:
       - name: Checkout code
