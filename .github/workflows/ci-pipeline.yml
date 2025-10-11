@@ -116,7 +116,7 @@ jobs:
           cd userservice
           mvn sonar:sonar \
             -Dsonar.organization=nataliyakozlovskaya \
-            -Dsonar.projectKey=user-service \
+            -Dsonar.projectKey=NataliyaKozlovskaya_innowise_internship \
             -Dsonar.projectName='User Service' \
             -Dsonar.qualitygate.wait=false \
             -Dsonar.issue.ignore.multicriteria=e1 \
@@ -126,7 +126,7 @@ jobs:
           cd ../authenticationservice
           mvn sonar:sonar \
             -Dsonar.organization=nataliyakozlovskaya \
-            -Dsonar.projectKey=auth-service \
+            -Dsonar.projectKey=NataliyaKozlovskaya_innowise_internship \
             -Dsonar.projectName='Auth Service' \
             -Dsonar.qualitygate.wait=false \
             -Dsonar.issue.ignore.multicriteria=e1 \
@@ -147,7 +147,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
+      - name: Set up Docker Builds
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
