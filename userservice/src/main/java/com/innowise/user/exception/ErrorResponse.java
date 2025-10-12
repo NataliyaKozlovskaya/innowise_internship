@@ -13,6 +13,7 @@ public class ErrorResponse {
   private String message;
   private String path;
 
+
   public ErrorResponse() {
     this.timestamp = LocalDateTime.now();
   }

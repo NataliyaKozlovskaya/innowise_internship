@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Transactional(readOnly = true)
-  @Cacheable(key = "#id", unless = "#result == null")
+//  @Cacheable(key = "#id", unless = "#result == null")
   @Override
   public UserDTO getUserById(String id) {
     return userRepository.findById(id)
@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Transactional(readOnly = true)
-  @Cacheable(key = "'email:' + #email", unless = "#result == null")
+//  @Cacheable(key = "'email:' + #email", unless = "#result == null")
   @Override
   public UserDTO getUserByEmail(String email) {
     return userRepository.findByEmail(email)
@@ -90,7 +90,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Transactional
-  @CachePut(key = "#id")
+  //@CachePut(key = "#id")
   @Override
   public UserDTO updateUser(String id, UpdateUserRequest request) {
     User user = userRepository.findById(id)
