@@ -1,21 +1,21 @@
 server:
-  port: 8088
+  port: 8099
 
 spring:
   application:
-    name: user-service
+    name: order-service
 
   liquibase:
     enabled: false
-    default-schema: user_schema
-    liquibase-schema: user_schema
+    default-schema: order_schema
+    liquibase-schema: order_schema
     change-log: classpath:/db/changelog/db.changelog-master.xml
     clear-checksums: true
 
   datasource:
-    url: ${USER_DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://postgres:5432/innowise_db?currentSchema=order_schema
+    username: postgres
+    password: postgres
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -24,18 +24,15 @@ spring:
     show-sql: true
     properties:
       hibernate:
-        default_schema: user_schema
+        default_schema: order_schema
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  data:
-    redis:
-      host: redis
-      port: 6379
-  cache:
-    type: redis #none
-    redis:
-      time-to-live: 3600000
+service:
+  user:
+    url: http://user-service:8088
+    method:
+      getUserById: /api/v1/users
 
 management:
   endpoints:

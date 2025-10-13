@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: NAKozlovskaya
-  SERVICES: "authenticationservice userservice"
+  SERVICES: "authenticationservice userservice orderservice"
   IMAGE_NAME: NAKozlovskaya/innowise-internship
 
 jobs:
@@ -43,7 +43,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [ userservice, authenticationservice ]
+        service: [ userservice, authenticationservice, orderservice ]
 
     steps:
       - name: Checkout code
@@ -60,6 +60,7 @@ jobs:
         run: |
           psql postgresql://postgres:postgres@localhost:5432/innowise_db -c "CREATE SCHEMA IF NOT EXISTS auth_schema;"
           psql postgresql://postgres:postgres@localhost:5432/innowise_db -c "CREATE SCHEMA IF NOT EXISTS user_schema;"
+          psql postgresql://postgres:postgres@localhost:5432/innowise_db -c "CREATE SCHEMA IF NOT EXISTS order_schema;"
 
       - name: Build ${{ matrix.service }}
         run: |
@@ -107,6 +108,7 @@ jobs:
         run: |
           cd userservice && mvn clean verify -DskipTests
           cd ../authenticationservice && mvn clean verify -DskipTests
+          cd ../orderservice && mvn clean verify -DskipTests
 
       - name: SonarQube Analysis
         env:
@@ -132,6 +134,16 @@ jobs:
             -Dsonar.issue.ignore.multicriteria=e1 \
             -Dsonar.issue.ignore.multicriteria.e1.ruleKey=squid:S00116 \
             -Dsonar.issue.ignore.multicriteria.e1.resourceKey=**/*
+          
+          cd orderservice
+          mvn sonar:sonar \
+            -Dsonar.organization=nataliyakozlovskaya \
+            -Dsonar.projectKey=NataliyaKozlovskaya_innowise_internship \
+            -Dsonar.projectName='Order Service' \
+            -Dsonar.qualitygate.wait=false \
+            -Dsonar.issue.ignore.multicriteria=e1 \
+            -Dsonar.issue.ignore.multicriteria.e1.ruleKey=squid:S00116 \
+            -Dsonar.issue.ignore.multicriteria.e1.resourceKey=**/*
 
   docker-build:
     name: Build and Push Docker Images
@@ -141,7 +153,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [userservice, authenticationservice]
+        service: [userservice, authenticationservice, orderservice]
 
     steps:
       - name: Checkout code
@@ -179,6 +191,17 @@ jobs:
           image-ref: ${{ env.REGISTRY }}/${{ matrix.service }}:latest
           format: 'sarif'
           output: 'trivy-results-${{ matrix.service }}.sarif'
+
+      - name: Check if SARIF file exists
+          id: check_sarif
+          run: |
+            if [ -f "trivy-results-${{ matrix.service }}.sarif" ]; then
+              echo "sarif_exists=true" >> $GITHUB_OUTPUT
+            else
+              echo "sarif_exists=false" >> $GITHUB_OUTPUT
+              echo "SARIF file not found: trivy-results-${{ matrix.service }}.sarif"
+              ls -la
+            fi
 
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
