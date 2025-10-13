@@ -135,7 +135,7 @@ jobs:
             -Dsonar.issue.ignore.multicriteria.e1.ruleKey=squid:S00116 \
             -Dsonar.issue.ignore.multicriteria.e1.resourceKey=**/*
           
-          cd orderservice
+          cd ../orderservice
           mvn sonar:sonar \
             -Dsonar.organization=nataliyakozlovskaya \
             -Dsonar.projectKey=NataliyaKozlovskaya_innowise_internship \
