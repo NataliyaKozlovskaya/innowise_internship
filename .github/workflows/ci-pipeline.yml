@@ -43,7 +43,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [ userservice, authenticationservice orderservice ]
+        service: [ userservice, authenticationservice, orderservice ]
 
     steps:
       - name: Checkout code
@@ -191,6 +191,17 @@ jobs:
           image-ref: ${{ env.REGISTRY }}/${{ matrix.service }}:latest
           format: 'sarif'
           output: 'trivy-results-${{ matrix.service }}.sarif'
+
+      - name: Check if SARIF file exists
+          id: check_sarif
+          run: |
+            if [ -f "trivy-results-${{ matrix.service }}.sarif" ]; then
+              echo "sarif_exists=true" >> $GITHUB_OUTPUT
+            else
+              echo "sarif_exists=false" >> $GITHUB_OUTPUT
+              echo "SARIF file not found: trivy-results-${{ matrix.service }}.sarif"
+              ls -la
+            fi
 
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
