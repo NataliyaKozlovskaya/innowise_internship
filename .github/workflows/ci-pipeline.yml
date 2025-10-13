@@ -7,11 +7,13 @@ on:
     branches: [ main, develop ]
 
 env:
+  REGISTRY: NAKozlovskaya
+  SERVICES: "authenticationservice userservice"
   IMAGE_NAME: NAKozlovskaya/innowise-internship
 
 jobs:
-  build:
-    name: Build and Test
+  build-and-test:
+    name: Build and Test Services
     runs-on: ubuntu-latest
 
     services:
@@ -39,51 +41,9 @@ jobs:
         ports:
           - 6379:6379
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Build application
-        run: mvn clean compile -DskipTests
-
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    needs: build
-
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: innowise_db
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
+    strategy:
+      matrix:
+        service: [ userservice, authenticationservice ]
 
     steps:
       - name: Checkout code
@@ -96,30 +56,40 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Run unit tests
-        run: mvn test
+      - name: Create database schemas
+        run: |
+          psql postgresql://postgres:postgres@localhost:5432/innowise_db -c "CREATE SCHEMA IF NOT EXISTS auth_schema;"
+          psql postgresql://postgres:postgres@localhost:5432/innowise_db -c "CREATE SCHEMA IF NOT EXISTS user_schema;"
 
-      - name: Run integration tests
-        run: mvn verify -DskipUnitTests
+      - name: Build ${{ matrix.service }}
+        run: |
+          cd ${{ matrix.service }}
+          mvn clean compile -DskipTests
 
-      - name: Generate test coverage report
-        run: mvn jacoco:report
+      - name: Run unit tests for ${{ matrix.service }}
+        run: |
+          cd ${{ matrix.service }}
+          mvn test -DskipUnitTests=false
+
+      - name: Run integration tests for ${{ matrix.service }}
+        run: |
+          cd ${{ matrix.service }}
+          mvn verify -DskipUnitTests=true
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results
+          name: test-results-${{ matrix.service }}
           path: |
-            target/surefire-reports/
-            target/failsafe-reports/
-            target/site/jacoco/
+            ${{ matrix.service }}/target/surefire-reports/
+            ${{ matrix.service }}/target/failsafe-reports/
           retention-days: 30
 
   code-analysis:
-    name: Code Analysis with SonarQube
+    name: Code Analysis
     runs-on: ubuntu-latest
-    needs: test
+    needs: build-and-test
 
     steps:
       - name: Checkout code
@@ -132,39 +102,46 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: maven
 
-      - name: Cache SonarQube packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+      - name: Build all services for Sonar
+        run: |
+          cd userservice && mvn clean verify -DskipTests
+          cd ../authenticationservice && mvn clean verify -DskipTests
 
-      - name: Build with coverage
-        run: mvn clean verify -Djacoco.check.skip=true
-
-      - name: Run SonarQube analysis
+      - name: SonarQube Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
+          cd userservice
           mvn sonar:sonar \
             -Dsonar.organization=nataliyakozlovskaya \
             -Dsonar.projectKey=NataliyaKozlovskaya_innowise_internship \
-            -Dsonar.projectName='Innowise Internship Project' \
-            -Dsonar.java.coveragePlugin=jacoco \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.projectName='User Service' \
+            -Dsonar.qualitygate.wait=false \
+            -Dsonar.issue.ignore.multicriteria=e1 \
+            -Dsonar.issue.ignore.multicriteria.e1.ruleKey=squid:S00116 \
+            -Dsonar.issue.ignore.multicriteria.e1.resourceKey=**/*
+          
+          cd ../authenticationservice
+          mvn sonar:sonar \
+            -Dsonar.organization=nataliyakozlovskaya \
+            -Dsonar.projectKey=NataliyaKozlovskaya_innowise_internship \
+            -Dsonar.projectName='Auth Service' \
             -Dsonar.qualitygate.wait=false \
             -Dsonar.issue.ignore.multicriteria=e1 \
             -Dsonar.issue.ignore.multicriteria.e1.ruleKey=squid:S00116 \
             -Dsonar.issue.ignore.multicriteria.e1.resourceKey=**/*
 
   docker-build:
-    name: Build and Push Docker Image
+    name: Build and Push Docker Images
     runs-on: ubuntu-latest
     needs: code-analysis
     if: github.ref == 'refs/heads/main'
+
+    strategy:
+      matrix:
+        service: [userservice, authenticationservice]
 
     steps:
       - name: Checkout code
@@ -179,34 +156,32 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build Docker image for ${{ matrix.service }}
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./${{ matrix.service }}
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          labels: |
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            ${{ env.REGISTRY }}/${{ matrix.service }}:latest
+            ${{ env.REGISTRY }}/${{ matrix.service }}:${{ github.sha }}
+            ${{ env.IMAGE_NAME }}-${{ matrix.service }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Verify Docker image
+      - name: Verify Docker image for ${{ matrix.service }}
         run: |
-          docker pull ${{ env.IMAGE_NAME }}:latest
-          docker images ${{ env.IMAGE_NAME }}
+          docker pull ${{ env.REGISTRY }}/${{ matrix.service }}:latest
+          docker images ${{ env.REGISTRY }}/${{ matrix.service }}
 
       - name: Scan image for vulnerabilities
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.IMAGE_NAME }}:latest
+          image-ref: ${{ env.REGISTRY }}/${{ matrix.service }}:latest
           format: 'sarif'
-          output: 'trivy-results.sarif'
+          output: 'trivy-results-${{ matrix.service }}.sarif'
 
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: 'trivy-results-${{ matrix.service }}.sarif'

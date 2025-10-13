@@ -1,0 +1,27 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          jwk-set-uri: disabled
+
+security:
+  basic:
+    enabled: false
+  oauth2:
+    client:
+      registration:
+        enabled: false
+
+management:
+  security:
+    enabled: false
+
+logging:
+  level:
+    org.springframework.security: OFF
