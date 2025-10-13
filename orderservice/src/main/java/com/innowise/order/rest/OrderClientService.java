@@ -5,7 +5,6 @@ import com.innowise.order.exception.UserNotFoundException;
 import com.innowise.order.exception.UserServiceUnavailableException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -18,17 +17,17 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class OrderClientService {
 
-  @Value("${service.user.url}")
-  private String host;
-  @Value("${service.user.method.getUserById}")
-  private String getUserById;
   private final RestTemplate restTemplate;
+  private final UserServiceProperties userServiceProperties;
 
   public void getUserById(String userId) {
-    try {
-      String url = host + getUserById;
+    log.info("Start calling user-service with userId: {}", userId);
 
-      ResponseEntity<UserDTO> response = restTemplate.getForEntity(url, UserDTO.class, userId);
+    String url = userServiceProperties.getUrl();
+    String methodGetUserById = userServiceProperties.getMethodGetUserById();
+    String fullUrl = url + methodGetUserById + userId;
+    try {
+      ResponseEntity<UserDTO> response = restTemplate.getForEntity(fullUrl, UserDTO.class);
 
       if (!response.getStatusCode().is2xxSuccessful()) {
         throw new UserNotFoundException("User not found with id: " + userId);

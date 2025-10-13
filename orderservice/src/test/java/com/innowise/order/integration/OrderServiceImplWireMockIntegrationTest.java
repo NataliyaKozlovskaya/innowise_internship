@@ -73,9 +73,8 @@ class OrderServiceImplWireMockIntegrationTest {
     registry.add("spring.datasource.username", postgres::getUsername);
     registry.add("spring.datasource.password", postgres::getPassword);
 
-    // WireMock properties
     registry.add("service.user.url", () -> "http://localhost:" + wireMockServer.port());
-    registry.add("service.user.method.getUserById", () -> "/api/v1/users/");
+    registry.add("service.user.methodGetUserById", () -> "/api/v1/users/");
   }
 
   @BeforeAll

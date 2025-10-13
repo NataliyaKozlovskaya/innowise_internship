@@ -31,8 +31,7 @@ spring:
 service:
   user:
     url: http://user-service:8088
-    method:
-      getUserById: /api/v1/users
+    methodGetUserById: /api/v1/users/
 
 management:
   endpoints:
