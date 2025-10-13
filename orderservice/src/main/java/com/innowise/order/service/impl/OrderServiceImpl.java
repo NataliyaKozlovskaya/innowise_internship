@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 public class OrderServiceImpl implements OrderService {
+
   private static final String ORDER_NOT_FOUND = "Order not found with id: ";
   private final OrderRepository orderRepository;
   private final ItemRepository itemRepository;
@@ -107,7 +108,7 @@ public class OrderServiceImpl implements OrderService {
     try {
       userClientService.getUserById(userId);
     } catch (UserNotFoundException ex) {
-      throw new UserNotFoundException("User not found with id: " + userId);
+      throw new UserServiceUnavailableException("User not found with id: " + userId, ex);
     } catch (Exception ex) {
       throw new UserServiceUnavailableException("User service unavailable", ex);
     }

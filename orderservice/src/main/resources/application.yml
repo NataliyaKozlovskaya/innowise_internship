@@ -32,7 +32,7 @@ service:
   user:
     url: http://user-service:8088
     method:
-      getUserById: /api/v1/users/{userId}
+      getUserById: /api/v1/users
 
 management:
   endpoints:
