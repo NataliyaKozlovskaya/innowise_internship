@@ -3,7 +3,7 @@ server:
 
 # JWT Configuration
 jwt:
-  secret: "mySuperSecretKeyThatIsVeryLongAndSecure1234567890"
+  secret: ${SECRET_KEY}
   access-token:
     expiration: 3600000    # 1 hour in milliseconds
   refresh-token:
@@ -21,9 +21,9 @@ spring:
     clear-checksums: true
 
   datasource:
-    url: jdbc:postgresql://postgres:5432/innowise_db?currentSchema=auth_schema
-    username: postgres
-    password: postgres
+    url: ${USER_SERVICE_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -38,7 +38,7 @@ spring:
 
 service:
   user:
-    url: http://user-service:8088
+    url: ${USER_SERVICE_URL}
 
 management:
   endpoints:

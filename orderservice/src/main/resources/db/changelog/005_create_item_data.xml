@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="005-1" author="NAKozlovskaya">
+    <comment>Create items data</comment>
+    <insert tableName="items" schemaName="order_schema">
+      <column name="name" value="Laptop"/>
+      <column name="price" value="999.99"/>
+    </insert>
+    <insert tableName="items" schemaName="order_schema">
+      <column name="name" value="Smartphone"/>
+      <column name="price" value="499.99"/>
+    </insert>
+    <insert tableName="items" schemaName="order_schema">
+      <column name="name" value="Tablet"/>
+      <column name="price" value="299.99"/>
+    </insert>
+    <insert tableName="items" schemaName="order_schema">
+      <column name="name" value="Headphones"/>
+      <column name="price" value="149.99"/>
+    </insert>
+    <insert tableName="items" schemaName="order_schema">
+      <column name="name" value="Keyboard"/>
+      <column name="price" value="79.99"/>
+    </insert>
+    <insert tableName="items" schemaName="order_schema">
+      <column name="name" value="Mouse"/>
+      <column name="price" value="29.99"/>
+    </insert>
+    <insert tableName="items" schemaName="order_schema">
+      <column name="name" value="Monitor"/>
+      <column name="price" value="199.99"/>
+    </insert>
+    <insert tableName="items" schemaName="order_schema">
+      <column name="name" value="Webcam"/>
+      <column name="price" value="89.99"/>
+    </insert>
+  </changeSet>
+</databaseChangeLog>

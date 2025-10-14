@@ -14,12 +14,12 @@ import org.springframework.web.client.RestTemplate;
 public class UserServiceClient {
   @Value("${service.user.url}")
   private String host;
-  private String createUser = "/api/v1/users";
+  private static final String CREATE_USER = "/api/v1/users";
   private final RestTemplate restTemplate;
 
   public void createUser(CreateUserRequest request) {
     try {
-      String url = host + createUser;
+      String url = host + CREATE_USER;
       ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
 
       if (response.getStatusCode().is2xxSuccessful()) {
