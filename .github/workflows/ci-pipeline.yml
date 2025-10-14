@@ -130,6 +130,7 @@ jobs:
             -Dsonar.organization=nataliyakozlovskaya \
             -Dsonar.projectKey=nataliyakozlovskaya-user-service \
             -Dsonar.projectName='User Service' \
+            -Dsonar.branch.name=main \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.issue.ignore.multicriteria=e1 \
@@ -144,6 +145,7 @@ jobs:
             -Dsonar.organization=nataliyakozlovskaya \
             -Dsonar.projectKey=nataliyakozlovskaya-auth-service \
             -Dsonar.projectName='Auth Service' \
+            -Dsonar.branch.name=main \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.issue.ignore.multicriteria=e1 \
@@ -158,6 +160,7 @@ jobs:
             -Dsonar.organization=nataliyakozlovskaya \
             -Dsonar.projectKey=nataliyakozlovskaya-order-service \
             -Dsonar.projectName='Order Service' \
+            -Dsonar.branch.name=main \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.issue.ignore.multicriteria=e1 \
