@@ -126,7 +126,7 @@ jobs:
           cd userservice
           mvn sonar:sonar \
             -Dsonar.java.binaries=target/classes \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
             -Dsonar.organization=nataliyakozlovskaya \
             -Dsonar.projectKey=NataliyaKozlovskaya_innowise_internship \
             -Dsonar.projectName='User Service' \
@@ -140,7 +140,7 @@ jobs:
           cd ../authenticationservice
           mvn sonar:sonar \
             -Dsonar.java.binaries=target/classes \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
             -Dsonar.organization=nataliyakozlovskaya \
             -Dsonar.projectKey=NataliyaKozlovskaya_innowise_internship \
             -Dsonar.projectName='Auth Service' \
@@ -154,7 +154,7 @@ jobs:
           cd ../orderservice
           mvn sonar:sonar \
             -Dsonar.java.binaries=target/classes \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
             -Dsonar.organization=nataliyakozlovskaya \
             -Dsonar.projectKey=NataliyaKozlovskaya_innowise_internship \
             -Dsonar.projectName='Order Service' \
