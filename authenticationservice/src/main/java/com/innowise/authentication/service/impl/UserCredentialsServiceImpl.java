@@ -1,16 +1,17 @@
 package com.innowise.authentication.service.impl;
 
-import com.innowise.authentication.dto.CreateUserRequest;
 import com.innowise.authentication.dto.LoginRequest;
 import com.innowise.authentication.dto.RefreshTokenRequest;
-import com.innowise.authentication.dto.RegisterRequest;
-import com.innowise.authentication.dto.TokenResponse;
+import com.innowise.authentication.dto.RegistrationRequest;
+import com.innowise.authentication.dto.LoginResponse;
 import com.innowise.authentication.dto.TokenValidationResponse;
+import com.innowise.authentication.dto.UserCreateRequest;
 import com.innowise.authentication.entity.UserCredentials;
 import com.innowise.authentication.entity.UserRole;
 import com.innowise.authentication.exception.InvalidTokenException;
 import com.innowise.authentication.exception.UserAlreadyExistsException;
 import com.innowise.authentication.exception.UserCreationException;
+import com.innowise.authentication.exception.UserNotFoundException;
 import com.innowise.authentication.repository.UserCredentialsRepository;
 import com.innowise.authentication.repository.UserRoleRepository;
 import com.innowise.authentication.rest.UserServiceClient;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserCredentialsServiceImpl implements UserCredentialsService {
 
   private static final String ROLE = "ROLE_USER";
+  private static final String USER_NOT_FOUND = "User not found with id: ";
   private final UserCredentialsRepository userCredentialsRepository;
   private final UserRoleRepository userRoleRepository;
   private final UserServiceClient userServiceClient;
@@ -50,7 +52,7 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
   }
 
   @Override
-  public TokenResponse login(LoginRequest loginRequest) {
+  public LoginResponse login(LoginRequest loginRequest) {
     log.info("Login attempt for user: {}", loginRequest.login());
 
     UserCredentials user = userCredentialsRepository.findByLogin(loginRequest.login())
@@ -64,11 +66,11 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
     String accessToken = jwtTokenProvider.generateAccessToken(loginRequest.login(), authorities);
     String refreshToken = jwtTokenProvider.generateRefreshToken(loginRequest.login());
 
-    return new TokenResponse(accessToken, refreshToken);
+    return new LoginResponse(accessToken, refreshToken);
   }
 
   @Override
-  public void createUserCredentials(RegisterRequest request) {
+  public void createUserCredentials(RegistrationRequest request) {
     log.info("User registration: {}", request.login());
 
     String userId = UUID.randomUUID().toString();
@@ -78,7 +80,7 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
           "User with login " + request.login() + " already exists");
     }
 
-    CreateUserRequest createUserRequest = new CreateUserRequest(
+    UserCreateRequest createUserRequest = new UserCreateRequest(
         userId, request.name(), request.surname(), request.birthDate(), request.email());
 
     try {
@@ -119,7 +121,7 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
   }
 
   @Override
-  public TokenResponse refreshToken(RefreshTokenRequest request) {
+  public LoginResponse refreshToken(RefreshTokenRequest request) {
     log.info("Refresh token request");
 
     if (jwtTokenProvider.validateToken(request.refreshToken())) {
@@ -132,9 +134,21 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
           ? jwtTokenProvider.generateRefreshToken(username)
           : request.refreshToken();
 
-      return new TokenResponse(newAccessToken, newRefreshToken);
+      return new LoginResponse(newAccessToken, newRefreshToken);
     } else {
       throw new InvalidTokenException("Invalid refresh token");
     }
+  }
+
+  @Override
+  public void deleteUser(String userId) {
+    UserCredentials user = findUserById(userId);
+    userCredentialsRepository.delete(user);
+  }
+
+  @Override
+  public UserCredentials findUserById(String userId) {
+    return userCredentialsRepository.findById(userId)
+        .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + userId));
   }
 }

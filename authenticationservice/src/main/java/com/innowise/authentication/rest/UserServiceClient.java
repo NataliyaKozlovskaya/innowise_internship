@@ -1,6 +1,6 @@
 package com.innowise.authentication.rest;
 
-import com.innowise.authentication.dto.CreateUserRequest;
+import com.innowise.authentication.dto.UserCreateRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +17,7 @@ public class UserServiceClient {
   private static final String CREATE_USER = "/api/v1/users";
   private final RestTemplate restTemplate;
 
-  public void createUser(CreateUserRequest request) {
+  public void createUser(UserCreateRequest request) {
     try {
       String url = host + CREATE_USER;
       ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);

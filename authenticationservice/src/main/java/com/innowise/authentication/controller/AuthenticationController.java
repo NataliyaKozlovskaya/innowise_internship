@@ -1,9 +1,9 @@
 package com.innowise.authentication.controller;
 
 import com.innowise.authentication.dto.LoginRequest;
-import com.innowise.authentication.dto.RegisterRequest;
+import com.innowise.authentication.dto.RegistrationRequest;
 import com.innowise.authentication.dto.RefreshTokenRequest;
-import com.innowise.authentication.dto.TokenResponse;
+import com.innowise.authentication.dto.LoginResponse;
 import com.innowise.authentication.dto.TokenValidationResponse;
 import com.innowise.authentication.service.UserCredentialsService;
 import com.innowise.authentication.service.impl.UserCredentialsServiceImpl;
@@ -11,6 +11,8 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/auth")
 @Slf4j
 public class AuthenticationController {
+
   private final UserCredentialsService userCredentialsService;
 
 
@@ -36,8 +39,8 @@ public class AuthenticationController {
    * Authenticates a user and returns JWT tokens upon successful login
    */
   @PostMapping("/login")
-  public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-    TokenResponse response = userCredentialsService.login(loginRequest);
+  public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+    LoginResponse response = userCredentialsService.login(loginRequest);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -46,9 +49,9 @@ public class AuthenticationController {
    * optionally rotates refresh token if expiring soon.
    */
   @PostMapping("/refresh")
-  public ResponseEntity<TokenResponse> refreshToken(
+  public ResponseEntity<LoginResponse> refreshToken(
       @Valid @RequestBody RefreshTokenRequest request) {
-    TokenResponse response = userCredentialsService.refreshToken(request);
+    LoginResponse response = userCredentialsService.refreshToken(request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -65,8 +68,17 @@ public class AuthenticationController {
    * Registers a new user with the provided credentials
    */
   @PostMapping("/register")
-  public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
+  public ResponseEntity<Void> register(@Valid @RequestBody RegistrationRequest request) {
     userCredentialsService.createUserCredentials(request);
     return ResponseEntity.status(HttpStatus.CREATED).build();
+  }
+
+  /**
+   * Delete user by ID
+   */
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> delete(@PathVariable String id) {
+    userCredentialsService.deleteUser(id);
+    return ResponseEntity.noContent().build();
   }
 }

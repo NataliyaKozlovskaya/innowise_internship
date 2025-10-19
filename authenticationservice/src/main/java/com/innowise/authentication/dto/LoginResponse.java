@@ -1,18 +1,18 @@
 package com.innowise.authentication.dto;
 
-public record TokenResponse(
+public record LoginResponse(
     String accessToken,
     String refreshToken,
     String tokenType
 ) {
 
-  public TokenResponse {
+  public LoginResponse {
     if (tokenType == null) {
       tokenType = "Bearer";
     }
   }
 
-  public TokenResponse(String accessToken, String refreshToken) {
+  public LoginResponse(String accessToken, String refreshToken) {
     this(accessToken, refreshToken, "Bearer");
   }
 }

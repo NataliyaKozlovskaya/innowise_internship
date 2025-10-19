@@ -3,11 +3,12 @@ package com.innowise.authentication.dto;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 
-public record CreateUserRequest(
-    @NotBlank String uuid,
+public record RegistrationRequest(
+    @NotBlank String login,
+    @NotBlank String password,
     @NotBlank String name,
     @NotBlank String surname,
-    @NotBlank LocalDate birthDate,
+    LocalDate birthDate,
     @NotBlank String email
 ) {
 
