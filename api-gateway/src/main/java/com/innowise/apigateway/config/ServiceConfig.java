@@ -10,4 +10,5 @@ import org.springframework.context.annotation.Configuration;
 public class ServiceConfig {
   private String userServiceUrl;
   private String authServiceUrl;
+  private String cardServiceUrl;
 }

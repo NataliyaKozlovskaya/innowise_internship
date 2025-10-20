@@ -30,6 +30,14 @@ public interface CardService {
   CardDTO getCardById(Long id);
 
   /**
+   * Find cards by user identifier
+   *
+   * @param id user identifier
+   * @return list of Cards
+   */
+  List<CardDTO> getCardByUserId(String id);
+
+  /**
    * Find list of card by ids
    *
    * @param ids list of  ids

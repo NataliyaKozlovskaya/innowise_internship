@@ -1,24 +1,24 @@
 package com.innowise.user.service.impl;
 
 
+import com.innowise.user.dto.card.CardDTO;
 import com.innowise.user.dto.user.CreateUserRequest;
 import com.innowise.user.dto.user.UpdateUserRequest;
 import com.innowise.user.dto.user.UserDTO;
+import com.innowise.user.dto.user.UserWithCardDTO;
 import com.innowise.user.entity.User;
 import com.innowise.user.exception.EmailAlreadyExistsException;
 import com.innowise.user.exception.UserNotFoundException;
 import com.innowise.user.mapper.UserMapper;
 import com.innowise.user.repository.UserRepository;
+import com.innowise.user.service.CardService;
 import com.innowise.user.service.UserService;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +31,7 @@ public class UserServiceImpl implements UserService {
 
   private static final String USER_NOT_FOUND = "User not found with id: ";
   private final UserRepository userRepository;
+  private final CardService cardservice;
   private final UserMapper userMapper;
 
   @Transactional
@@ -112,12 +113,16 @@ public class UserServiceImpl implements UserService {
   @Transactional
   @CacheEvict(key = "#id")
   @Override
-  public void deleteUser(String id) {
+  public UserWithCardDTO deleteUser(String id) {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
 
+    List<CardDTO> cardDTOList = cardservice.getCardByUserId(id);
+
     evictEmailCache(user.getEmail());
     userRepository.delete(user);
+
+    return new UserWithCardDTO(user.getName(), user.getSurname(), user.getBirthDate(), user.getEmail(), cardDTOList);
   }
 
   /**

@@ -35,7 +35,8 @@ public class CardServiceImpl implements CardService {
     Card card = new Card();
     card.setNumber(request.number());
     card.setHolder(request.holder());
-    card.setExpirationDate(LocalDate.now().plusYears(4));
+    card.setExpirationDate(request.expirationDate());
+//    card.setExpirationDate(LocalDate.now().plusYears(4));
     card.setUser(user);
     cardInfoRepository.save(card);
 
@@ -48,6 +49,15 @@ public class CardServiceImpl implements CardService {
     return cardInfoRepository.findById(id)
         .map(cardMapper::toCardDTO)
         .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND + id));
+  }
+
+  @Transactional(readOnly = true)
+  @Override
+  public List<CardDTO> getCardByUserId(String id) {
+    List<CardDTO> cardList = cardInfoRepository.findAllByUserUuid(id).stream()
+        .map(cardMapper::toCardDTO).toList();
+
+    return cardList;
   }
 
   @Transactional(readOnly = true)

@@ -1,9 +1,11 @@
 package com.innowise.apigateway.controller;
 
-import com.innowise.apigateway.dto.RegistrationRequest;
-import com.innowise.apigateway.dto.RegistrationResponse;
-import com.innowise.apigateway.dto.login.LoginRequest;
-import com.innowise.apigateway.dto.login.LoginResponse;
+import com.innowise.apigateway.dto.auth.login.LoginRequest;
+import com.innowise.apigateway.dto.auth.login.LoginResponse;
+import com.innowise.apigateway.dto.auth.registration.RegistrationRequest;
+import com.innowise.apigateway.dto.auth.registration.RegistrationResponse;
+import com.innowise.apigateway.dto.auth.token.RefreshTokenRequest;
+import com.innowise.apigateway.dto.auth.token.TokenValidationResponse;
 import com.innowise.apigateway.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
@@ -49,6 +52,33 @@ public class AuthController {
 
           return Mono.just(ResponseEntity.badRequest()
               .body(new LoginResponse(null, null)));
+        });
+  }
+
+  @PostMapping("/refresh")
+  public Mono<ResponseEntity<LoginResponse>> refreshToken(
+      @Valid @RequestBody RefreshTokenRequest request) {
+    return authService.refreshToken(request)
+        .map(ResponseEntity::ok)
+        .onErrorResume(error -> {
+
+          log.error("Refresh token failed ", error.getMessage());
+
+          return Mono.just(ResponseEntity.badRequest()
+              .body(new LoginResponse(null, null)));
+        });
+  }
+
+  @PostMapping("/validate")
+  public Mono<ResponseEntity<TokenValidationResponse>> validateToken(@RequestParam String token) {
+    return authService.validateToken(token)
+        .map(response -> ResponseEntity.ok(response))
+        .onErrorResume(error -> {
+
+          log.error("Validation of token failed ", error.getMessage());
+
+          return Mono.just(ResponseEntity.badRequest()
+              .body(new TokenValidationResponse(false, null, null)));
         });
   }
 }

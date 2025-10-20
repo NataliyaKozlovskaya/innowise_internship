@@ -1,4 +1,4 @@
-package com.innowise.apigateway.dto.login;
+package com.innowise.apigateway.dto.auth.login;
 
 import jakarta.validation.constraints.NotBlank;
 

@@ -1,4 +1,4 @@
-package com.innowise.apigateway.dto;
+package com.innowise.apigateway.dto.auth.registration;
 
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;

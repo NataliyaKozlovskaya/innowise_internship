@@ -1,14 +1,16 @@
 package com.innowise.apigateway.service;
 
 import com.innowise.apigateway.config.ServiceConfig;
-import com.innowise.apigateway.dto.AuthCreateRequest;
-import com.innowise.apigateway.dto.AuthRegistrationResponse;
-import com.innowise.apigateway.dto.RegistrationRequest;
-import com.innowise.apigateway.dto.RegistrationResponse;
-import com.innowise.apigateway.dto.UserCreateRequest;
-import com.innowise.apigateway.dto.UserResponse;
-import com.innowise.apigateway.dto.login.LoginRequest;
-import com.innowise.apigateway.dto.login.LoginResponse;
+import com.innowise.apigateway.dto.auth.login.LoginRequest;
+import com.innowise.apigateway.dto.auth.login.LoginResponse;
+import com.innowise.apigateway.dto.auth.registration.AuthCreateRequest;
+import com.innowise.apigateway.dto.auth.registration.AuthRegistrationResponse;
+import com.innowise.apigateway.dto.auth.registration.RegistrationRequest;
+import com.innowise.apigateway.dto.auth.registration.RegistrationResponse;
+import com.innowise.apigateway.dto.auth.token.RefreshTokenRequest;
+import com.innowise.apigateway.dto.auth.token.TokenValidationResponse;
+import com.innowise.apigateway.dto.user.registration.UserCreateRequest;
+import com.innowise.apigateway.dto.user.registration.UserResponse;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -71,6 +73,41 @@ public class AuthService {
         });
   }
 
+  public Mono<LoginResponse> refreshToken(RefreshTokenRequest request) {
+    log.info("API Gateway: Attempting refresh token for user");
+
+    return createRefreshTokenInAuthService(request)
+        .flatMap(refreshResponse -> {
+          log.info("API Gateway: Refresh token successful");
+          return Mono.just(new LoginResponse(
+              refreshResponse.accessToken(),
+              refreshResponse.refreshToken()
+          ));
+        })
+        .onErrorResume(error -> {
+          log.error("API Gateway: Refresh token failed", error.getMessage());
+          return Mono.error(new RuntimeException("Refresh token failed", error));
+        });
+  }
+
+  public Mono<TokenValidationResponse> validateToken(String token) {
+    log.info("API Gateway: Attempting validate token");
+
+    return createValidateTokenInAuthService(token)
+        .flatMap(validateResponse -> {
+          log.info("API Gateway: Validate token successful");
+          return Mono.just(new TokenValidationResponse(
+              true,
+              validateResponse.username(),
+              validateResponse.authorities()
+          ));
+        })
+        .onErrorResume(error -> {
+          log.error("API Gateway: Validate token failed", error.getMessage());
+          return Mono.error(new RuntimeException("Validate token failed", error));
+        });
+  }
+
   private Mono<Void> rollbackUser(String userId, String login) {
     log.warn("Starting rollback for user due to auth service failure. UserId: {}, Login: {}",
         userId, login);
@@ -83,12 +120,33 @@ public class AuthService {
             log.error("Rollback failed for user {}: {}. Manual cleanup required!",
                 login, rollbackError.getMessage())
         )
-        // Даже если откат не удался, возвращаем оригинальную ошибку auth service
         .onErrorResume(rollbackError -> {
           log.error("CRITICAL: Failed to delete user during rollback. UserId: {}, Error: {}",
               userId, rollbackError.getMessage());
           return Mono.empty(); // Продолжаем с оригинальной ошибкой
         });
+  }
+
+  private Mono<LoginResponse> createRefreshTokenInAuthService(RefreshTokenRequest request) {
+    return webClient.post()
+        .uri(serviceConfig.getAuthServiceUrl() + "/api/v1/auth/refresh")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(request)
+        .retrieve()
+        .bodyToMono(LoginResponse.class)
+        .doOnError(
+            error -> log.error("Failed to refresh token in Auth Service: {}", error.getMessage()));
+  }
+
+  private Mono<TokenValidationResponse> createValidateTokenInAuthService(String token) {
+    return webClient.post()
+        .uri(serviceConfig.getAuthServiceUrl() + "/api/v1/auth/validate")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(token)
+        .retrieve()
+        .bodyToMono(TokenValidationResponse.class)
+        .doOnError(
+            error -> log.error("Failed to validate token in Auth Service: {}", error.getMessage()));
   }
 
   private Mono<LoginResponse> createLoginUserInAuthService(LoginRequest loginRequest) {
