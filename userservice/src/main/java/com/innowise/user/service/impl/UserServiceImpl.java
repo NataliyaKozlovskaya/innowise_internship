@@ -4,14 +4,17 @@ package com.innowise.user.service.impl;
 import com.innowise.user.dto.card.CardDTO;
 import com.innowise.user.dto.user.CreateUserRequest;
 import com.innowise.user.dto.user.UpdateUserRequest;
+import com.innowise.user.dto.user.UserCreateResponse;
 import com.innowise.user.dto.user.UserDTO;
 import com.innowise.user.dto.user.UserWithCardDTO;
+import com.innowise.user.entity.Card;
 import com.innowise.user.entity.User;
 import com.innowise.user.exception.EmailAlreadyExistsException;
 import com.innowise.user.exception.UserNotFoundException;
+import com.innowise.user.mapper.CardMapper;
 import com.innowise.user.mapper.UserMapper;
+import com.innowise.user.repository.CardRepository;
 import com.innowise.user.repository.UserRepository;
-import com.innowise.user.service.CardService;
 import com.innowise.user.service.UserService;
 import java.util.List;
 import java.util.Optional;
@@ -31,33 +34,35 @@ public class UserServiceImpl implements UserService {
 
   private static final String USER_NOT_FOUND = "User not found with id: ";
   private final UserRepository userRepository;
-  private final CardService cardservice;
+  private final CardRepository cardRepository;
   private final UserMapper userMapper;
+  private final CardMapper cardMapper;
 
   @Transactional
   @Override
-  public UserDTO createUser(CreateUserRequest request) {
+  public UserCreateResponse createUser(CreateUserRequest request) {
     userRepository.findByEmail(request.email()).ifPresent(user -> {
       throw new EmailAlreadyExistsException("Email already exists: " + request.email());
     });
 
     User user = new User();
 
+    user.setUuid(request.uuid());
     user.setName(request.name());
     user.setSurname(request.surname());
     user.setBirthDate(request.birthDate());
     user.setEmail(request.email());
     User savedUser = userRepository.save(user);
 
-    return userMapper.toUserDTO(savedUser);
+    return userMapper.toUserCreateResponse(savedUser);
   }
 
   @Transactional(readOnly = true)
 //  @Cacheable(key = "#id", unless = "#result == null")
   @Override
-  public UserDTO getUserById(String id) {
+  public UserCreateResponse getUserById(String id) {
     return userRepository.findById(id)
-        .map(userMapper::toUserDTO)
+        .map(userMapper::toUserCreateResponse)
         .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
   }
 
@@ -85,9 +90,9 @@ public class UserServiceImpl implements UserService {
   @Transactional(readOnly = true)
 //  @Cacheable(key = "'email:' + #email", unless = "#result == null")
   @Override
-  public UserDTO getUserByEmail(String email) {
+  public UserCreateResponse getUserByEmail(String email) {
     return userRepository.findByEmail(email)
-        .map(userMapper::toUserDTO)
+        .map(userMapper::toUserCreateResponse)
         .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
   }
 
@@ -97,6 +102,11 @@ public class UserServiceImpl implements UserService {
   public UserDTO updateUser(String id, UpdateUserRequest request) {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
+
+    if(userRepository.findByEmail(request.email()).isPresent()){
+      log.error("User can`t be updated, email {} already exist ", request.email());
+      throw new EmailAlreadyExistsException("User can`t be updated, email already exist");
+    }
 
     if (request.email() != null && !request.email().equals(user.getEmail())) {
       evictEmailCache(user.getEmail());
@@ -117,7 +127,8 @@ public class UserServiceImpl implements UserService {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
 
-    List<CardDTO> cardDTOList = cardservice.getCardByUserId(id);
+    List<Card> cardList = cardRepository.findAllByUserUuid(id);
+    List<CardDTO> cardDTOList = cardList.stream().map(cardMapper::toCardDTO).toList();
 
     evictEmailCache(user.getEmail());
     userRepository.delete(user);

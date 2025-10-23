@@ -2,7 +2,7 @@ package com.innowise.authentication.service.impl;
 
 import com.innowise.authentication.dto.LoginRequest;
 import com.innowise.authentication.dto.RefreshTokenRequest;
-import com.innowise.authentication.dto.RegistrationRequest;
+import com.innowise.authentication.dto.AuthCreateRequest;
 import com.innowise.authentication.dto.LoginResponse;
 import com.innowise.authentication.dto.TokenValidationResponse;
 import com.innowise.authentication.dto.UserCreateRequest;
@@ -20,7 +20,6 @@ import com.innowise.authentication.service.UserCredentialsService;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,11 +54,11 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
   public LoginResponse login(LoginRequest loginRequest) {
     log.info("Login attempt for user: {}", loginRequest.login());
 
-    UserCredentials user = userCredentialsRepository.findByLogin(loginRequest.login())
-        .orElseThrow(() -> new BadCredentialsException("User not found"));
+    UserCredentials user = userCredentialsRepository.findByLoginWithRoles(loginRequest.login())
+        .orElseThrow(() -> new RuntimeException("User not found"));
 
     if (!passwordEncoder.matches(loginRequest.password(), user.getPasswordHash())) {
-      throw new BadCredentialsException("Invalid password");
+      throw new RuntimeException("Invalid password");
     }
 
     List<String> authorities = user.getRolesAsStrings();
@@ -70,28 +69,16 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
   }
 
   @Override
-  public void createUserCredentials(RegistrationRequest request) {
+  public void createUserCredentials(AuthCreateRequest request) {
     log.info("User registration: {}", request.login());
-
-    String userId = UUID.randomUUID().toString();
 
     if (userCredentialsRepository.existsById(request.login())) {
       throw new UserAlreadyExistsException(
           "User with login " + request.login() + " already exists");
     }
 
-    UserCreateRequest createUserRequest = new UserCreateRequest(
-        userId, request.name(), request.surname(), request.birthDate(), request.email());
-
-    try {
-      userServiceClient.createUser(createUserRequest);
-    } catch (Exception e) {
-      log.error("Failed to create user profile: " + e.getMessage());
-      throw new UserCreationException("Failed to create user profile: " + e.getMessage());
-    }
-
     UserCredentials credentials = new UserCredentials();
-    credentials.setUuid(userId);
+    credentials.setUuid(request.uuid());
     credentials.setLogin(request.login());
     credentials.setPasswordHash(passwordEncoder.encode(request.password()));
 

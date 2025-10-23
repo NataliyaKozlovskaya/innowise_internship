@@ -1,7 +1,7 @@
 package com.innowise.authentication.controller;
 
 import com.innowise.authentication.dto.LoginRequest;
-import com.innowise.authentication.dto.RegistrationRequest;
+import com.innowise.authentication.dto.AuthCreateRequest;
 import com.innowise.authentication.dto.RefreshTokenRequest;
 import com.innowise.authentication.dto.LoginResponse;
 import com.innowise.authentication.dto.TokenValidationResponse;
@@ -68,7 +68,7 @@ public class AuthenticationController {
    * Registers a new user with the provided credentials
    */
   @PostMapping("/register")
-  public ResponseEntity<Void> register(@Valid @RequestBody RegistrationRequest request) {
+  public ResponseEntity<Void> register(@Valid @RequestBody AuthCreateRequest request) {
     userCredentialsService.createUserCredentials(request);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
@@ -76,7 +76,7 @@ public class AuthenticationController {
   /**
    * Delete user by ID
    */
-  @DeleteMapping("/{id}")
+  @DeleteMapping("/internal/{id}")
   public ResponseEntity<Void> delete(@PathVariable String id) {
     userCredentialsService.deleteUser(id);
     return ResponseEntity.noContent().build();

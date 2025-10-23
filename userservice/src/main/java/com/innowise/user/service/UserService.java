@@ -2,6 +2,7 @@ package com.innowise.user.service;
 
 import com.innowise.user.dto.user.CreateUserRequest;
 import com.innowise.user.dto.user.UpdateUserRequest;
+import com.innowise.user.dto.user.UserCreateResponse;
 import com.innowise.user.dto.user.UserDTO;
 import com.innowise.user.dto.user.UserWithCardDTO;
 import com.innowise.user.entity.User;
@@ -19,7 +20,7 @@ public interface UserService {
    * @param request user to be created
    * @return user
    */
-  UserDTO createUser(CreateUserRequest request);
+  UserCreateResponse createUser(CreateUserRequest request);
 
   /**
    * Find user by identifier
@@ -27,7 +28,7 @@ public interface UserService {
    * @param id user identifier
    * @return userDTO
    */
-  UserDTO getUserById(String id);
+  UserCreateResponse getUserById(String id);
 
   /**
    * Find userEntity by identifier
@@ -51,7 +52,7 @@ public interface UserService {
    * @param email user email
    * @return user
    */
-  UserDTO getUserByEmail(String email);
+  UserCreateResponse getUserByEmail(String email);
 
   /**
    * Update user by identifier

@@ -1,7 +1,7 @@
 package com.innowise.authentication.service;
 
 import com.innowise.authentication.dto.LoginRequest;
-import com.innowise.authentication.dto.RegistrationRequest;
+import com.innowise.authentication.dto.AuthCreateRequest;
 import com.innowise.authentication.dto.RefreshTokenRequest;
 import com.innowise.authentication.dto.LoginResponse;
 import com.innowise.authentication.dto.TokenValidationResponse;
@@ -25,7 +25,7 @@ public interface UserCredentialsService {
    *
    * @param request credentials for new user
    */
-  void createUserCredentials(RegistrationRequest request);
+  void createUserCredentials(AuthCreateRequest request);
 
   /**
    * Refreshes the access token using a valid refresh token. Generates a new access token and
