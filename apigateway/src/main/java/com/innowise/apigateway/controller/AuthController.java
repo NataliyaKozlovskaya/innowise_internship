@@ -9,6 +9,7 @@ import com.innowise.apigateway.dto.auth.token.TokenValidationResponse;
 import com.innowise.apigateway.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,7 +33,7 @@ public class AuthController {
   public Mono<ResponseEntity<RegistrationResponse>> register(
       @RequestBody RegistrationRequest request) {
     return authService.registerUser(request)
-        .map(ResponseEntity::ok)
+        .map(user -> ResponseEntity.status(HttpStatus.CREATED).body(user))
         .onErrorResume(error -> {
 
           log.error("Registration failed for user {}: {}", request.login(), error.getMessage());
@@ -51,7 +52,7 @@ public class AuthController {
           log.error("Login failed for user {}: {}", loginRequest.login(), error.getMessage());
 
           return Mono.just(ResponseEntity.badRequest()
-              .body(new LoginResponse(null, null)));
+              .body(null));
         });
   }
 
@@ -65,20 +66,20 @@ public class AuthController {
           log.error("Refresh token failed ", error.getMessage());
 
           return Mono.just(ResponseEntity.badRequest()
-              .body(new LoginResponse(null, null)));
+              .body(null));
         });
   }
 
   @PostMapping("/validate")
   public Mono<ResponseEntity<TokenValidationResponse>> validateToken(@RequestParam String token) {
     return authService.validateToken(token)
-        .map(response -> ResponseEntity.ok(response))
+        .map(ResponseEntity::ok)
         .onErrorResume(error -> {
 
           log.error("Validation of token failed ", error.getMessage());
 
           return Mono.just(ResponseEntity.badRequest()
-              .body(new TokenValidationResponse(false, null, null)));
+              .body(null));
         });
   }
 }

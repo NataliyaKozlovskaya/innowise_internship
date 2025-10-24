@@ -1,4 +1,4 @@
-package com.innowise.order.dto;
+package com.innowise.apigateway.dto.order;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

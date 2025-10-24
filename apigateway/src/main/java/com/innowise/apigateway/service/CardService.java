@@ -62,16 +62,16 @@ public class CardService {
     log.info("API Gateway: Starting find cards in CardService: {}", ids);
 
     return getCardsByIdsInCardService(ids)
-        .doOnSuccess(
-            cardDTOs -> log.info("API Gateway: get cards by ids {} successful. Found {} cards",
-                ids, cardDTOs.size()))
+        .doOnSuccess(cardDTOs ->
+            log.info("API Gateway: get cards by ids {} successful. Found {} cards", ids,
+                cardDTOs.size()))
         .map(cardDTOs -> cardDTOs.stream()
             .map(card -> new CardDTO(card.number(), card.holder(), card.expirationDate()))
             .toList()
         )
         .onErrorResume(error -> {
-          log.error("API Gateway: Get users by ids failed", error.getMessage());
-          return Mono.error(new RuntimeException("Get users by ids failed", error));
+          log.error("API Gateway: Get cards by ids failed", error.getMessage());
+          return Mono.error(new RuntimeException("Get cards by ids failed", error));
         });
   }
 
@@ -100,7 +100,7 @@ public class CardService {
 
         })
         .onErrorResume(error -> {
-          log.error("API Gateway: Creation og card failed", error.getMessage());
+          log.error("API Gateway: Creation card failed", error.getMessage());
           return Mono.error(new RuntimeException("Creation of card failed", error));
         });
   }
@@ -118,9 +118,8 @@ public class CardService {
         .uri(serviceConfig.getCardServiceUrl() + "/api/v1/cards/{id}", id)
         .retrieve()
         .bodyToMono(Void.class)
-        .doOnError(
-            error -> log.error("Failed to delete card by id in CardService: {}",
-                error.getMessage()));
+        .doOnError(error ->
+            log.error("Failed to delete card by id in CardService: {}", error.getMessage()));
   }
 
   private Mono<CardDTO> createCardInCardService(String userId, CreateCardRequest request) {
@@ -128,11 +127,12 @@ public class CardService {
         request.number(), request.holder(), request.expirationDate());
     return webClient.post()
         .uri(serviceConfig.getCardServiceUrl() + "/api/v1/cards?userId={userId}", userId)
+        .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(cardRequest)
         .retrieve()
         .bodyToMono(CardDTO.class)
-        .doOnError(
-            error -> log.error("Failed to create card in CardService: {}", error.getMessage()));
+        .doOnError(error ->
+            log.error("Failed to create card in CardService: {}", error.getMessage()));
   }
 
   private Mono<CardDTO> updateCardInCardService(Long id, UpdateCardRequest request) {
@@ -142,9 +142,8 @@ public class CardService {
         .bodyValue(request)
         .retrieve()
         .bodyToMono(CardDTO.class)
-        .doOnError(
-            error -> log.error("Failed to get cards by id in CardService: {}",
-                error.getMessage()));
+        .doOnError(error ->
+            log.error("Failed to get cards by id in CardService: {}", error.getMessage()));
   }
 
   private Mono<List<CardDTO>> getCardsByIdsInCardService(List<Long> ids) {
@@ -158,8 +157,8 @@ public class CardService {
         .retrieve()
         .bodyToMono(new ParameterizedTypeReference<List<CardDTO>>() {
         })
-        .doOnError(error -> log.error("Failed to get cards by ids in CardService: {}",
-            error.getMessage()));
+        .doOnError(error ->
+            log.error("Failed to get cards by ids in CardService: {}", error.getMessage()));
   }
 
   private Mono<CardDTO> getCardByIdInCardService(Long id) {
@@ -167,8 +166,8 @@ public class CardService {
         .uri(serviceConfig.getCardServiceUrl() + "/api/v1/cards/{id}", id)
         .retrieve()
         .bodyToMono(CardDTO.class)
-        .doOnError(
-            error -> log.error("Failed to get card by id in CardService: {}", error.getMessage()));
+        .doOnError(error ->
+            log.error("Failed to get card by id in CardService: {}", error.getMessage()));
   }
 
   private Mono<List<CardDTO>> getCardByUserIdInCardService(String id) {
@@ -177,8 +176,7 @@ public class CardService {
         .retrieve()
         .bodyToMono(new ParameterizedTypeReference<List<CardDTO>>() {
         })
-        .doOnError(
-            error -> log.error("Failed to get cards by userId in CardService: {}",
-                error.getMessage()));
+        .doOnError(error ->
+            log.error("Failed to get cards by userId in CardService: {}", error.getMessage()));
   }
 }

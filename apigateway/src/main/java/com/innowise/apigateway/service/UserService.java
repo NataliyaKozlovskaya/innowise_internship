@@ -49,9 +49,9 @@ public class UserService {
   public Mono<List<UserDTO>> getUserByIds(List<String> ids) {
     log.info("API Gateway: Starting find users in UserService: {}", ids);
     return getUsersByIdsInUserService(ids)
-        .doOnSuccess(
-            userDTOs -> log.info("API Gateway: get users by ids {} successful. Found {} users",
-                ids, userDTOs.size()))
+        .doOnSuccess(userDTOs ->
+            log.info("API Gateway: get users by ids {} successful. Found {} users", ids,
+                userDTOs.size()))
         .map(userDTOs -> userDTOs.stream()
             .map(user -> new UserDTO(user.name(), user.surname(), user.birthDate(), user.email()))
             .toList()
@@ -98,15 +98,15 @@ public class UserService {
 
     return deleteUserInUserService(id)
         .doOnSubscribe(s -> log.info("API Gateway: UserService deletion subscribed"))
-        .doOnSuccess(userData -> log.info(
-            "API Gateway: UserService deletion completed. User data received"))
+        .doOnSuccess(userData ->
+            log.info("API Gateway: UserService deletion completed. User data received"))
         .flatMap(userData -> {
           log.info("API Gateway: Starting AuthService deletion for id {}", id);
 
           return deleteUserInAuthService(id)
               .doOnSubscribe(s -> log.info("API Gateway: AuthService deletion subscribed"))
-              .doOnSuccess(
-                  v -> log.info("API Gateway: [6] AuthService deletion successful for id {}", id))
+              .doOnSuccess(v ->
+                  log.info("API Gateway: AuthService deletion successful for id {}", id))
               .onErrorResume(error -> {
                 log.error(
                     "API Gateway: AuthService deletion failed, initiating rollback for id {}",
@@ -133,11 +133,9 @@ public class UserService {
         .onStatus(HttpStatusCode::isError, response ->
             Mono.error(new RuntimeException("Auth Service error: " + response.statusCode())))
         .bodyToMono(Void.class)
-        .doOnError(
-            error -> log.error("Failed to delete card by id in CardService: {}",
-                error.getMessage()));
+        .doOnError(error ->
+            log.error("Failed to delete card by id in CardService: {}", error.getMessage()));
   }
-
 
   private Mono<UserCreateResponse> rollbackUserDeletion(String id, UserWithCardDTO userResponse) {
     UserCreateRequest user = new UserCreateRequest(
@@ -153,8 +151,8 @@ public class UserService {
         .bodyValue(user)
         .retrieve()
         .bodyToMono(UserCreateResponse.class)
-        .doOnError(
-            error -> log.error("Failed to create user in UserService: {}", error.getMessage()));
+        .doOnError(error ->
+            log.error("Failed to create user in UserService: {}", error.getMessage()));
   }
 
   /**
@@ -184,7 +182,7 @@ public class UserService {
               .onErrorResume(error -> {
                 log.warn("Failed to restore card {} for user {}, skipping: {}",
                     cardDTO.number(), id, error.getMessage());
-                return Mono.empty(); // Skip failed cards
+                return Mono.empty();
               });
         })
         .collectList()
@@ -205,11 +203,10 @@ public class UserService {
         .uri(serviceConfig.getUserServiceUrl() + "/api/v1/users/{id}", id)
         .retrieve()
         .bodyToMono(UserWithCardDTO.class)
-        .doOnSuccess(
-            userData -> log.info("API Gateway: User deleted with data: {}", userData))
-        .doOnError(
-            error -> log.error("Failed to delete user by id in User Service: {}",
-                error.getMessage()));
+        .doOnSuccess(userData ->
+            log.info("API Gateway: User deleted with data: {}", userData))
+        .doOnError(error ->
+            log.error("Failed to delete user by id in User Service: {}", error.getMessage()));
   }
 
   private Mono<UserDTO> updateUserInUserService(String id, UpdateUserRequest request) {
@@ -219,9 +216,8 @@ public class UserService {
         .bodyValue(request)
         .retrieve()
         .bodyToMono(UserDTO.class)
-        .doOnError(
-            error -> log.error("Failed to get users by email in User Service: {}",
-                error.getMessage()));
+        .doOnError(error ->
+            log.error("Failed to get users by email in User Service: {}", error.getMessage()));
   }
 
   private Mono<UserDTO> getUserByEmailInUserService(String email) {
@@ -229,9 +225,8 @@ public class UserService {
         .uri(serviceConfig.getUserServiceUrl() + "/api/v1/users/email?email={email}", email)
         .retrieve()
         .bodyToMono(UserDTO.class)
-        .doOnError(
-            error -> log.error("Failed to get users by email in User Service: {}",
-                error.getMessage()));
+        .doOnError(error ->
+            log.error("Failed to get users by email in User Service: {}", error.getMessage()));
   }
 
   private Mono<UserDTO> getUserByIdInUserService(String id) {
@@ -239,8 +234,8 @@ public class UserService {
         .uri(serviceConfig.getUserServiceUrl() + "/api/v1/users/{id}", id)
         .retrieve()
         .bodyToMono(UserDTO.class)
-        .doOnError(
-            error -> log.error("Failed to get user by id in User Service: {}", error.getMessage()));
+        .doOnError(error ->
+            log.error("Failed to get user by id in User Service: {}", error.getMessage()));
   }
 
   private Mono<List<UserDTO>> getUsersByIdsInUserService(List<String> ids) {
@@ -252,8 +247,7 @@ public class UserService {
         .retrieve()
         .bodyToMono(new ParameterizedTypeReference<List<UserDTO>>() {
         })
-        .doOnError(
-            error -> log.error("Failed to get users by ids in User Service: {}",
-                error.getMessage()));
+        .doOnError(error ->
+            log.error("Failed to get users by ids in User Service: {}", error.getMessage()));
   }
 }

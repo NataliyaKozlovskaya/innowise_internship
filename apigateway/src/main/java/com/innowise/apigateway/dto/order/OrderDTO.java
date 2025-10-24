@@ -1,6 +1,6 @@
-package com.innowise.order.dto;
+package com.innowise.apigateway.dto.order;
 
-import com.innowise.order.enums.OrderStatus;
+import com.innowise.apigateway.enums.OrderStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;

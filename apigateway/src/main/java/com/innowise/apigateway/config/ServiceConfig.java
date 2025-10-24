@@ -11,4 +11,5 @@ public class ServiceConfig {
   private String userServiceUrl;
   private String authServiceUrl;
   private String cardServiceUrl;
+  private String orderServiceUrl;
 }
