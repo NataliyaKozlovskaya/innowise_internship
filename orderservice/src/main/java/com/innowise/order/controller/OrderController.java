@@ -64,4 +64,16 @@ public class OrderController {
     orderService.deleteOrder(id);
     return ResponseEntity.noContent().build();
   }
+
+  @DeleteMapping("/user/{id}")
+  public ResponseEntity<Void> deleteOrderByUserId(@PathVariable String id) {
+    orderService.deleteOrderByUserId(id);
+    return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/users/internal/{id}")
+  public ResponseEntity<List<OrderDTO>> getOrderByUserId(@PathVariable String id) {
+    List<OrderDTO> order = orderService.getOrdersByUserId(id);
+    return ResponseEntity.ok(order);
+  }
 }

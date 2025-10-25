@@ -5,6 +5,7 @@ import com.innowise.authentication.dto.AuthCreateRequest;
 import com.innowise.authentication.dto.RefreshTokenRequest;
 import com.innowise.authentication.dto.LoginResponse;
 import com.innowise.authentication.dto.TokenValidationResponse;
+import com.innowise.authentication.dto.UserCredentialsDataRecovery;
 import com.innowise.authentication.entity.UserCredentials;
 
 /**
@@ -28,6 +29,13 @@ public interface UserCredentialsService {
   void createUserCredentials(AuthCreateRequest request);
 
   /**
+   * Registered user data recovery
+   *
+   * @param request user`s data
+   */
+  void recoveryUserCredentials(UserCredentialsDataRecovery request);
+
+  /**
    * Refreshes the access token using a valid refresh token. Generates a new access token and
    * optionally rotates the refresh token if it's expiring soon.
    *
@@ -49,7 +57,7 @@ public interface UserCredentialsService {
    *
    * @param userId user identifier
    */
-  void deleteUser(String userId);
+  UserCredentialsDataRecovery deleteUser(String userId);
 
   /**
    * Find user by identifier
@@ -58,5 +66,4 @@ public interface UserCredentialsService {
    * @return UserCredentials
    */
   UserCredentials findUserById(String userId);
-
 }

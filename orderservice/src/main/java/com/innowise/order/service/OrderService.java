@@ -23,6 +23,15 @@ public interface OrderService {
    */
   OrderDTO getOrderById(Long id);
 
+
+  /**
+   * Find orders by user identifier
+   *
+   * @param id user identifier
+   * @return list of orders
+   */
+  List<OrderDTO> getOrdersByUserId(String id);
+
   /**
    * Find list of orders by ids
    *
@@ -54,4 +63,11 @@ public interface OrderService {
    * @param id order identifier
    */
   void deleteOrder(Long id);
+
+  /**
+   * Delete order by user identifier
+   *
+   * @param id user identifier
+   */
+  void deleteOrderByUserId(String id);
 }

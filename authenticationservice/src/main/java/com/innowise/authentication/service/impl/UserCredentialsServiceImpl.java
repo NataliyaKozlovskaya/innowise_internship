@@ -5,20 +5,21 @@ import com.innowise.authentication.dto.RefreshTokenRequest;
 import com.innowise.authentication.dto.AuthCreateRequest;
 import com.innowise.authentication.dto.LoginResponse;
 import com.innowise.authentication.dto.TokenValidationResponse;
-import com.innowise.authentication.dto.UserCreateRequest;
+import com.innowise.authentication.dto.UserCredentialsDataRecovery;
+import com.innowise.authentication.dto.UserRoleDTO;
 import com.innowise.authentication.entity.UserCredentials;
 import com.innowise.authentication.entity.UserRole;
 import com.innowise.authentication.exception.InvalidTokenException;
 import com.innowise.authentication.exception.UserAlreadyExistsException;
-import com.innowise.authentication.exception.UserCreationException;
 import com.innowise.authentication.exception.UserNotFoundException;
+import com.innowise.authentication.mapper.UserRoleMapper;
 import com.innowise.authentication.repository.UserCredentialsRepository;
 import com.innowise.authentication.repository.UserRoleRepository;
 import com.innowise.authentication.rest.UserServiceClient;
 import com.innowise.authentication.security.JwtTokenProvider;
 import com.innowise.authentication.service.UserCredentialsService;
 import java.util.List;
-import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,18 +37,19 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
   private final UserServiceClient userServiceClient;
   private final PasswordEncoder passwordEncoder;
   private final JwtTokenProvider jwtTokenProvider;
-
+  private final UserRoleMapper userRoleMapper;
 
   public UserCredentialsServiceImpl(UserCredentialsRepository userCredentialsRepository,
       UserRoleRepository userRoleRepository, UserServiceClient userServiceClient,
       PasswordEncoder passwordEncoder,
-      JwtTokenProvider jwtTokenProvider
-  ) {
+      JwtTokenProvider jwtTokenProvider,
+      UserRoleMapper userRoleMapper) {
     this.userCredentialsRepository = userCredentialsRepository;
     this.userRoleRepository = userRoleRepository;
     this.userServiceClient = userServiceClient;
     this.passwordEncoder = passwordEncoder;
     this.jwtTokenProvider = jwtTokenProvider;
+    this.userRoleMapper = userRoleMapper;
   }
 
   @Override
@@ -92,6 +94,37 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
   }
 
   @Override
+  public void recoveryUserCredentials(UserCredentialsDataRecovery request) {
+    log.info("User recovery credentials with id: {}, login: {}", request.uuid(), request.login());
+
+    if (userCredentialsRepository.existsById(request.login())) {
+      throw new UserAlreadyExistsException(
+          "User with login " + request.login()
+              + " already exists. Recovering failed. Manual intervention is required");
+    }
+
+    UserCredentials credentials = new UserCredentials();
+    credentials.setUuid(request.uuid());
+    credentials.setLogin(request.login());
+    credentials.setPasswordHash(request.passwordHash());
+    credentials.setCreatedAt(request.createdAt());
+    credentials.setUpdatedAt(request.updatedAt());
+
+    List<UserRole> userRoles = request.roles().stream()
+        .map(roleDto -> {
+          UserRole userRole = new UserRole();
+          userRole.setUserLogin(request.login());
+          userRole.setRole(roleDto.role());
+          return userRole;
+        })
+        .collect(Collectors.toList());
+
+    userCredentialsRepository.save(credentials);
+    userRoleRepository.saveAll(userRoles);
+    log.info("Recovering user`s credentials was successful, for login: {}", request.login());
+  }
+
+  @Override
   public TokenValidationResponse validateToken(String token) {
     log.info("Token validation request");
 
@@ -128,9 +161,24 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
   }
 
   @Override
-  public void deleteUser(String userId) {
+  public UserCredentialsDataRecovery deleteUser(String userId) {
     UserCredentials user = findUserById(userId);
+
+    List<UserRoleDTO> userRoles = userRoleRepository.findAllByUserLogin(user.getLogin())
+        .stream()
+        .map(userRoleMapper::toUserRoleDTO)
+        .toList();
+
     userCredentialsRepository.delete(user);
+
+    return new UserCredentialsDataRecovery(
+        userId,
+        user.getPasswordHash(),
+        user.getLogin(),
+        user.getCreatedAt(),
+        user.getUpdatedAt(),
+        userRoles
+    );
   }
 
   @Override

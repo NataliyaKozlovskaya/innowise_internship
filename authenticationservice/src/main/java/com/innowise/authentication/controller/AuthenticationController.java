@@ -5,6 +5,7 @@ import com.innowise.authentication.dto.AuthCreateRequest;
 import com.innowise.authentication.dto.RefreshTokenRequest;
 import com.innowise.authentication.dto.LoginResponse;
 import com.innowise.authentication.dto.TokenValidationResponse;
+import com.innowise.authentication.dto.UserCredentialsDataRecovery;
 import com.innowise.authentication.service.UserCredentialsService;
 import com.innowise.authentication.service.impl.UserCredentialsServiceImpl;
 import jakarta.validation.Valid;
@@ -74,11 +75,21 @@ public class AuthenticationController {
   }
 
   /**
+   * Registered user data recovery
+   */
+  @PostMapping("/recovery/register")
+  public ResponseEntity<Void> recoveryUserCredentials(
+      @Valid @RequestBody UserCredentialsDataRecovery request) {
+    userCredentialsService.recoveryUserCredentials(request);
+    return ResponseEntity.status(HttpStatus.CREATED).build();
+  }
+
+  /**
    * Delete user by ID
    */
   @DeleteMapping("/internal/{id}")
-  public ResponseEntity<Void> delete(@PathVariable String id) {
-    userCredentialsService.deleteUser(id);
-    return ResponseEntity.noContent().build();
+  public ResponseEntity<UserCredentialsDataRecovery> delete(@PathVariable String id) {
+    UserCredentialsDataRecovery response = userCredentialsService.deleteUser(id);
+    return ResponseEntity.ok().body(response);
   }
 }

@@ -1,6 +1,7 @@
 package com.innowise.apigateway.service;
 
 import com.innowise.apigateway.config.ServiceConfig;
+import com.innowise.apigateway.dto.auth.recovery.UserCredentialsDataRecovery;
 import com.innowise.apigateway.dto.card.CardDTO;
 import com.innowise.apigateway.dto.card.CreateCardRequest;
 import com.innowise.apigateway.dto.user.UpdateUserRequest;
@@ -105,8 +106,27 @@ public class UserService {
 
           return deleteUserInAuthService(id)
               .doOnSubscribe(s -> log.info("API Gateway: AuthService deletion subscribed"))
-              .doOnSuccess(v ->
+              .doOnSuccess(authResult ->
                   log.info("API Gateway: AuthService deletion successful for id {}", id))
+              .flatMap(authResult -> {
+                log.info("API Gateway: Starting OrderService deletion for id {}", id);
+
+                return deleteUserOrdersInOrderService(id)
+                    .doOnSubscribe(s -> log.info("API Gateway: OrderService deletion subscribed"))
+                    .doOnSuccess(orderResult ->
+                        log.info("API Gateway: OrderService deletion successful for id {}", id))
+                    .onErrorResume(error -> {
+                      log.error(
+                          "API Gateway: OrderService deletion failed, initiating rollback for id {}",
+                          id);
+                      return rollbackAuthServiceDeletion(authResult)
+                          .then(rollbackUserDeletion(id, userData))
+                          .then(rollbackCardDeletion(id, userData))
+                          .then(Mono.error(
+                              new RuntimeException("Deletion failed in order service", error)));
+                    });
+              })
+
               .onErrorResume(error -> {
                 log.error(
                     "API Gateway: AuthService deletion failed, initiating rollback for id {}",
@@ -124,7 +144,16 @@ public class UserService {
         });
   }
 
-  private Mono<Void> deleteUserInAuthService(String id) {
+  private Mono<Void> deleteUserOrdersInOrderService(String id) {
+    return webClient.delete()
+        .uri(serviceConfig.getOrderServiceUrl() + "/api/v1/orders/user/{id}", id)
+        .retrieve()
+        .bodyToMono(Void.class)
+        .doOnError(
+            error -> log.error("API Gateway: Failed to delete orders for user {}", id, error));
+  }
+
+  private Mono<UserCredentialsDataRecovery> deleteUserInAuthService(String id) {
     log.info("API Gateway: Preparing to delete user from Auth Service: {}", id);
 
     return webClient.delete()
@@ -132,14 +161,30 @@ public class UserService {
         .retrieve()
         .onStatus(HttpStatusCode::isError, response ->
             Mono.error(new RuntimeException("Auth Service error: " + response.statusCode())))
-        .bodyToMono(Void.class)
+        .bodyToMono(UserCredentialsDataRecovery.class)
         .doOnError(error ->
             log.error("Failed to delete card by id in CardService: {}", error.getMessage()));
   }
 
-  private Mono<UserCreateResponse> rollbackUserDeletion(String id, UserWithCardDTO userResponse) {
+  private Mono<Void> rollbackAuthServiceDeletion(UserCredentialsDataRecovery data) {
+    log.info("API Gateway: Rolling back AuthService deletion for user {}", data.uuid());
+    return webClient.post()
+        .uri(serviceConfig.getAuthServiceUrl() + "/api/v1/auth/recovery/register")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(data)
+        .retrieve()
+        .bodyToMono(Void.class)
+        .doOnError(error ->
+            log.error(
+                "Recovering for userId {} failed in AuthService. Manual intervention is required: {}",
+                data.uuid(), error.getMessage()));
+  }
+
+  private Mono<UserCreateResponse> rollbackUserDeletion(String userId,
+      UserWithCardDTO userResponse) {
+    log.info("API Gateway: Rolling back UserService deletion for user {}", userId);
     UserCreateRequest user = new UserCreateRequest(
-        id,
+        userId,
         userResponse.name(),
         userResponse.surname(),
         userResponse.birthDate(),
