@@ -1,26 +1,18 @@
 package com.innowise.apigateway.controller;
 
 import com.innowise.apigateway.dto.auth.login.LoginRequest;
-import com.innowise.apigateway.dto.auth.login.LoginResponse;
 import com.innowise.apigateway.dto.auth.registration.RegistrationRequest;
 import com.innowise.apigateway.dto.auth.registration.RegistrationResponse;
-import com.innowise.apigateway.dto.auth.token.RefreshTokenRequest;
-import com.innowise.apigateway.dto.auth.token.TokenValidationResponse;
 import com.innowise.apigateway.service.AuthService;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 @Slf4j
-@RestController
-@RequestMapping("/api/v1/auth")
+@Component
 public class AuthController {
 
   private final AuthService authService;
@@ -29,57 +21,47 @@ public class AuthController {
     this.authService = authService;
   }
 
-  @PostMapping("/register")
-  public Mono<ResponseEntity<RegistrationResponse>> register(
-      @RequestBody RegistrationRequest request) {
-    return authService.registerUser(request)
-        .map(user -> ResponseEntity.status(HttpStatus.CREATED).body(user))
+  public Mono<ServerResponse> register(ServerRequest request) {
+    return request.bodyToMono(RegistrationRequest.class)
+        .flatMap(authService::registerUser)
+        .flatMap(user -> ServerResponse.status(HttpStatus.CREATED).bodyValue(user))
         .onErrorResume(error -> {
 
-          log.error("Registration failed for user {}: {}", request.login(), error.getMessage());
+          log.error("Registration failed: {}", error.getMessage());
 
-          return Mono.just(ResponseEntity.badRequest()
-              .body(new RegistrationResponse(request.login(), request.email())));
+          return ServerResponse.badRequest()
+              .bodyValue(new RegistrationResponse("error", "error@email.com"));
         });
   }
 
-  @PostMapping("/login")
-  public Mono<ResponseEntity<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest) {
-    return authService.loginUser(loginRequest)
-        .map(ResponseEntity::ok)
+  public Mono<ServerResponse> login(ServerRequest request) {
+    return request.bodyToMono(LoginRequest.class)
+        .flatMap(authService::loginUser)
+        .flatMap(body -> ServerResponse.status(HttpStatus.OK).bodyValue(body))
         .onErrorResume(error -> {
-
-          log.error("Login failed for user {}: {}", loginRequest.login(), error.getMessage());
-
-          return Mono.just(ResponseEntity.badRequest()
-              .body(null));
+          log.error("Login failed for user ", error.getMessage());
+          return ServerResponse.badRequest().build();
         });
   }
 
-  @PostMapping("/refresh")
-  public Mono<ResponseEntity<LoginResponse>> refreshToken(
-      @Valid @RequestBody RefreshTokenRequest request) {
-    return authService.refreshToken(request)
-        .map(ResponseEntity::ok)
+  public Mono<ServerResponse> refreshToken(ServerRequest request) {
+    return request.bodyToMono(LoginRequest.class)
+        .flatMap(authService::loginUser)
+        .flatMap(body -> ServerResponse.status(HttpStatus.OK).bodyValue(body))
         .onErrorResume(error -> {
-
           log.error("Refresh token failed ", error.getMessage());
-
-          return Mono.just(ResponseEntity.badRequest()
-              .body(null));
+          return ServerResponse.badRequest().build();
         });
   }
 
-  @PostMapping("/validate")
-  public Mono<ResponseEntity<TokenValidationResponse>> validateToken(@RequestParam String token) {
-    return authService.validateToken(token)
-        .map(ResponseEntity::ok)
+  public Mono<ServerResponse> validateToken(ServerRequest request) {
+    return Mono.fromCallable(() -> request.queryParam("token")
+            .orElseThrow(() -> new IllegalArgumentException("Token parameter is required")))
+        .flatMap(authService::validateToken)
+        .flatMap(response -> ServerResponse.ok().bodyValue(response))
         .onErrorResume(error -> {
-
-          log.error("Validation of token failed ", error.getMessage());
-
-          return Mono.just(ResponseEntity.badRequest()
-              .body(null));
+          log.error("Validation of token failed ", error);
+          return ServerResponse.badRequest().build();
         });
   }
 }

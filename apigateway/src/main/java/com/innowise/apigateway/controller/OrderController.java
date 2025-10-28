@@ -1,28 +1,20 @@
 package com.innowise.apigateway.controller;
 
 import com.innowise.apigateway.dto.order.CreateOrderRequest;
-import com.innowise.apigateway.dto.order.OrderDTO;
 import com.innowise.apigateway.enums.OrderStatus;
 import com.innowise.apigateway.service.OrderService;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 @Slf4j
-@RestController
-@RequestMapping("/api/v1/orders")
+@Component
 public class OrderController {
 
   private final OrderService orderService;
@@ -31,75 +23,103 @@ public class OrderController {
     this.orderService = orderService;
   }
 
-  @PostMapping
-  public Mono<ResponseEntity<OrderDTO>> createOrder(@RequestBody CreateOrderRequest request) {
-    return orderService.createOrder(request)
-        .map(order -> ResponseEntity.status(HttpStatus.CREATED).body(order))
+  public Mono<ServerResponse> createOrder(ServerRequest request) {
+    return request.bodyToMono(CreateOrderRequest.class)
+        .flatMap(orderService::createOrder)
+        .flatMap(order -> ServerResponse.status(HttpStatus.CREATED).bodyValue(order))
         .onErrorResume(error -> {
-          log.error("Creation card failed for user with id {}: {}", request.userId(),
-              error.getMessage());
-
-          return Mono.just(ResponseEntity.badRequest().body(null));
+          log.error("Creation order failed: {}", error.getMessage());
+          return ServerResponse.badRequest().build();
         });
   }
 
-  @GetMapping("/{id}")
-  public Mono<ResponseEntity<OrderDTO>> getOrderById(@PathVariable Long id) {
+  public Mono<ServerResponse> getOrderById(ServerRequest request) {
+    Long id = Long.valueOf(request.pathVariable("id"));
+
     return orderService.getOrderById(id)
-        .map(ResponseEntity::ok)
+        .flatMap(order -> ServerResponse.ok().bodyValue(order))
         .onErrorResume(error -> {
-          log.error("Get card with id {} failed", id, error.getMessage());
-
-          return Mono.just(ResponseEntity.badRequest().body(null));
+          log.error("Get order with id {} failed", id, error.getMessage());
+          return ServerResponse.badRequest().build();
         });
   }
 
-  @GetMapping("/batch")
-  public Mono<ResponseEntity<List<OrderDTO>>> getOrdersByIds(
-      @RequestParam(name = "ids") List<Long> ids) {
-    return orderService.getOrdersByIds(ids)
-        .map(ResponseEntity::ok)
-        .defaultIfEmpty(ResponseEntity.noContent().build())
+  public Mono<ServerResponse> getOrdersByIds(ServerRequest request) {
+    return Mono.justOrEmpty(request.queryParam("ids"))
+        .switchIfEmpty(Mono.error(new IllegalArgumentException("Ids parameter is required")))
+        .map(ids -> Arrays.stream(ids.split(","))
+            .map(String::trim)
+            .map(Long::valueOf)
+            .collect(Collectors.toList()))
+        .flatMap(orderService::getOrdersByIds)
+        .flatMap(orders -> {
+          if (orders.isEmpty()) {
+            return ServerResponse.noContent().build();
+          }
+          return ServerResponse.ok().bodyValue(orders);
+        })
         .onErrorResume(error -> {
-          log.error("Orders not found with ids: {}", ids);
-
-          return Mono.just(ResponseEntity.badRequest().body(null));
+          if (error instanceof IllegalArgumentException) {
+            log.warn("Ids parameter is missing");
+            return ServerResponse.badRequest().bodyValue("Ids parameter is required");
+          }
+          if (error instanceof NumberFormatException) {
+            log.warn("Invalid id format in request: {}", request.queryParam("ids").orElse(""));
+            return ServerResponse.badRequest().bodyValue("Invalid id format");
+          }
+          log.error("Orders not found with ids: {}", request.queryParam("ids").orElse(""), error);
+          return ServerResponse.badRequest().build();
         });
   }
 
-  @GetMapping("/status")
-  public Mono<ResponseEntity<List<OrderDTO>>> getOrdersByStatuses(
-      @RequestParam List<OrderStatus> statuses) {
-    return orderService.getOrdersByStatuses(statuses)
-        .map(ResponseEntity::ok)
-        .defaultIfEmpty(ResponseEntity.ok(Collections.emptyList()))
+  public Mono<ServerResponse> getOrdersByStatuses(ServerRequest request) {
+    return Mono.justOrEmpty(request.queryParam("statuses"))
+        .switchIfEmpty(Mono.error(new IllegalArgumentException("Statuses parameter is required")))
+        .map(statuses -> Arrays.stream(statuses.split(","))
+            .map(String::trim)
+            .map(OrderStatus::valueOf)
+            .collect(Collectors.toList()))
+        .flatMap(orderService::getOrdersByStatuses)
+        .flatMap(orders -> ServerResponse.ok().bodyValue(orders))
+        .switchIfEmpty(ServerResponse.ok().bodyValue(Collections.emptyList()))
         .onErrorResume(error -> {
-          log.error("Orders not found with statuses: {}", statuses, error);
-          return Mono.just(ResponseEntity.ok(Collections.emptyList()));
+          if (error instanceof IllegalArgumentException) {
+            log.warn("Statuses parameter is missing");
+            return ServerResponse.badRequest().bodyValue("Statuses parameter is required");
+          }
+          if (error instanceof IllegalArgumentException && error.getMessage()
+              .contains("No enum constant")) {
+            log.warn("Invalid order status in request: {}",
+                request.queryParam("statuses").orElse(""));
+            return ServerResponse.badRequest().bodyValue("Invalid order status");
+          }
+          log.error("Orders not found with statuses: {}", request.queryParam("statuses").orElse(""),
+              error);
+          return ServerResponse.ok().bodyValue(Collections.emptyList());
         });
   }
 
-  @PatchMapping("/{id}/status")
-  public Mono<ResponseEntity<OrderDTO>> updateOrderStatus(
-      @PathVariable Long id,
-      @RequestParam OrderStatus status) {
+  public Mono<ServerResponse> updateOrderStatus(ServerRequest request) {
+    Long id = Long.valueOf(request.pathVariable("id"));
+    OrderStatus status = OrderStatus.valueOf(request.queryParam("status")
+        .orElseThrow(() -> new IllegalArgumentException("Status parameter is required")));
 
     return orderService.updateOrder(id, status)
-        .map(ResponseEntity::ok)
+        .flatMap(order -> ServerResponse.ok().bodyValue(order))
         .onErrorResume(error -> {
-          log.error("Order was not updated with id {}", id);
-
-          return Mono.just(ResponseEntity.badRequest().body(null));
+          log.error("Order was not updated with id {}", id, error);
+          return ServerResponse.badRequest().build();
         });
   }
 
-  @DeleteMapping("/{id}")
-  public Mono<ResponseEntity<Void>> deleteOrder(@PathVariable Long id) {
+  public Mono<ServerResponse> deleteOrder(ServerRequest request) {
+    Long id = Long.valueOf(request.pathVariable("id"));
+
     return orderService.deleteOrder(id)
-        .map(v -> ResponseEntity.noContent().<Void>build())
+        .then(ServerResponse.noContent().build())
         .onErrorResume(error -> {
           log.error("Delete failed for order with id {}: {}", id, error.getMessage());
-          return Mono.just(ResponseEntity.noContent().build());
+          return ServerResponse.noContent().build();
         });
   }
 }

@@ -12,61 +12,6 @@ spring:
   cloud:
     gateway:
       routes:
-        # Auth Service
-        - id: auth-login-public
-          uri: http://auth-service:8089
-          predicates:
-            - Path=/auth/login
-          filters:
-            - StripPrefix=1
-
-        - id: auth-register-public
-          uri: http://auth-service:8089
-          predicates:
-            - Path=/auth/register
-          filters:
-            - StripPrefix=1
-
-        - id: auth-validate-public
-          uri: http://auth-service:8089
-          predicates:
-            - Path=/auth/validate
-          filters:
-            - StripPrefix=1
-
-        - id: auth-service-protected
-          uri: http://auth-service:8089
-          predicates:
-            - Path=/auth/**
-          filters:
-            - StripPrefix=1
-#            - name: JwtAuthenticationFilter
-
-        # User Service
-        - id: user-register-public
-          uri: http://user-service:8088
-          predicates:
-            - Path=/users/register
-          filters:
-            - StripPrefix=1
-
-        - id: user-card-service-protected
-          uri: http://user-service:8088
-          predicates:
-            - Path=/users/**, /cards/**
-          filters:
-            - StripPrefix=1
-#            - name: JwtAuthenticationFilter
-
-        # Order Service
-        - id: order-service
-          uri: http://order-service:8099
-          predicates:
-            - Path=/orders/**
-          filters:
-            - StripPrefix=1
-#            - name: JwtAuthenticationFilter
-
 
 app:
   services:

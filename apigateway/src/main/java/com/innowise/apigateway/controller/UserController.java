@@ -1,26 +1,17 @@
 package com.innowise.apigateway.controller;
 
 import com.innowise.apigateway.dto.user.UpdateUserRequest;
-import com.innowise.apigateway.dto.user.UserDTO;
 import com.innowise.apigateway.service.UserService;
-import jakarta.validation.Valid;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 @Slf4j
-@RestController
-@RequestMapping("/api/v1/users")
+@Component
 public class UserController {
 
   private final UserService userService;
@@ -29,67 +20,70 @@ public class UserController {
     this.userService = userService;
   }
 
-  @GetMapping("/{id}")
-  public Mono<ResponseEntity<UserDTO>> getUserById(@PathVariable String id) {
+  public Mono<ServerResponse> getUserById(ServerRequest request) {
+    String id = request.pathVariable("id");
+    log.info("Getting user by id: {}", id);
 
     return userService.getUserById(id)
-        .map(ResponseEntity::ok)
+        .flatMap(user -> ServerResponse.ok().bodyValue(user))
+        .switchIfEmpty(ServerResponse.notFound().build())
         .onErrorResume(error -> {
-          log.error("User not found with id: {}", id);
-
-          return Mono.just(ResponseEntity.notFound().build());
+          log.error("Error getting user with id {}: {}", id, error.getMessage());
+          return ServerResponse.badRequest().bodyValue("Error retrieving user");
         });
   }
 
-  @GetMapping("/batch")
-  public Mono<ResponseEntity<List<UserDTO>>> getUsersByIds(
-      @RequestParam(name = "ids") List<String> ids) {
-    return userService.getUserByIds(ids)
-        .map(ResponseEntity::ok)
-        .defaultIfEmpty(ResponseEntity.ok(Collections.emptyList()))
+  public Mono<ServerResponse> getUsersByIds(ServerRequest request) {
+    return Mono.justOrEmpty(request.queryParam("ids"))
+        .switchIfEmpty(Mono.error(new IllegalArgumentException("Ids parameter is required")))
+        .map(ids -> Arrays.asList(ids.split(",")))
+        .flatMap(userService::getUserByIds)
+        .flatMap(users -> ServerResponse.ok().bodyValue(users))
         .onErrorResume(error -> {
-          log.error("Users not found with ids: {}", ids, error);
-          return Mono.just(ResponseEntity.ok(Collections.emptyList()));
+          if (error instanceof IllegalArgumentException) {
+            log.warn("Ids parameter is missing");
+            return ServerResponse.badRequest().bodyValue("Ids parameter is required");
+          }
+          log.error("Error getting users by ids", error);
+          return ServerResponse.ok().bodyValue(Collections.emptyList());
         });
   }
 
-  @GetMapping("/email")
-  public Mono<ResponseEntity<UserDTO>> getUserByEmail(
-      @Valid @RequestParam(name = "email") String email) {
-    return userService.getUserByEmail(email)
-        .map(ResponseEntity::ok)
+  public Mono<ServerResponse> getUserByEmail(ServerRequest request) {
+    return Mono.justOrEmpty(request.queryParam("email"))
+        .switchIfEmpty(Mono.error(new IllegalArgumentException("Email parameter is required")))
+        .flatMap(userService::getUserByEmail)
+        .flatMap(user -> ServerResponse.ok().bodyValue(user))
         .onErrorResume(error -> {
-          log.error("User not found with email: {}", email);
-
-          return Mono.just(ResponseEntity.notFound().build());
+          if (error instanceof IllegalArgumentException) {
+            log.warn("Email parameter is missing");
+            return ServerResponse.badRequest().bodyValue("Email parameter is required");
+          }
+          log.error("User not found with email: {}", request.queryParam("email").orElse(""), error);
+          return ServerResponse.notFound().build();
         });
   }
 
-  @PatchMapping("/{id}")
-  public Mono<ResponseEntity<UserDTO>> updateUser(
-      @PathVariable String id,
-      @RequestBody @Valid UpdateUserRequest request) {
-    return userService.updateUser(id, request)
-        .map(ResponseEntity::ok)
-        .onErrorResume(error -> {
-          log.error("User was not updated with id {}", id);
+  public Mono<ServerResponse> updateUser(ServerRequest request) {
+    String id = request.pathVariable("id");
 
-          return Mono.just(ResponseEntity.notFound().build());
+    return request.bodyToMono(UpdateUserRequest.class)
+        .flatMap(updateRequest -> userService.updateUser(id, updateRequest))
+        .flatMap(user -> ServerResponse.ok().bodyValue(user))
+        .onErrorResume(error -> {
+          log.error("User was not updated with id {}", id, error);
+          return ServerResponse.notFound().build();
         });
   }
 
-  @DeleteMapping("/{id}")
-  public Mono<ResponseEntity<Void>> deleteUser(@PathVariable String id) {
+  public Mono<ServerResponse> deleteUser(ServerRequest request) {
+    String id = request.pathVariable("id");
+
     return userService.deleteUser(id)
-        .map(ResponseEntity::ok)
+        .then(ServerResponse.ok().build())
         .onErrorResume(error -> {
           log.error("Delete failed for user {}: {}", id, error.getMessage());
-          return Mono.just(ResponseEntity.badRequest().body(null));
+          return ServerResponse.badRequest().build();
         });
   }
 }
-/**
- * ErrorResponse errorResponse = new ErrorResponse( "DELETE_FAILED", "Failed to delete user: " +
- * error.getMessage(), id ); return Mono.just(ResponseEntity.badRequest().body(errorResponse)); // ←
- * 400 с ошибкой });
- */

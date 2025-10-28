@@ -95,16 +95,25 @@ public class AuthService {
 
     return createValidateTokenInAuthService(token)
         .flatMap(validateResponse -> {
-          log.info("API Gateway: Validate token successful");
-          return Mono.just(new TokenValidationResponse(
-              true,
-              validateResponse.username(),
-              validateResponse.authorities()
-          ));
+          if (validateResponse.valid()) {
+            log.info("API Gateway: Validate token successful");
+            return Mono.just(new TokenValidationResponse(
+                true,
+                validateResponse.username(),
+                validateResponse.authorities()
+            ));
+          } else {
+            log.info("API Gateway: Validate token failed - invalid token");
+            return Mono.just(new TokenValidationResponse(
+                false,
+                null,
+                null
+            ));
+          }
         })
         .onErrorResume(error -> {
-          log.error("API Gateway: Validate token failed", error.getMessage());
-          return Mono.error(new RuntimeException("Validate token failed", error));
+          log.error("API Gateway: Validate token failed: {}", error.getMessage());
+          return Mono.just(new TokenValidationResponse(false, null, null));
         });
   }
 
@@ -139,19 +148,21 @@ public class AuthService {
   }
 
   private Mono<TokenValidationResponse> createValidateTokenInAuthService(String token) {
+    System.out.println("🔍 GATEWAY: Validating token: " + (token != null ?
+        token.substring(0, Math.min(10, token.length())) + "..." : "null"));
     String fullUrl = serviceConfig.getAuthServiceUrl() + "/api/v1/auth/validate?token=" + token;
-
     return webClient.post()
         .uri(fullUrl)
-        .contentType(MediaType.APPLICATION_JSON)
         .retrieve()
         .bodyToMono(TokenValidationResponse.class)
+        .doOnNext(response -> System.out.println(
+            "🔍 GATEWAY: Auth service response - valid: " + response.valid()))
         .doOnError(
-            error -> log.error("Failed to validate token in Auth Service: {}", error.getMessage()));
+            error -> System.out.println("🔍 GATEWAY: Auth service error: " + error.getMessage()))
+        .onErrorReturn(new TokenValidationResponse(false, null, null));
   }
 
   private Mono<LoginResponse> createLoginUserInAuthService(LoginRequest loginRequest) {
-
     return webClient.post()
         .uri(serviceConfig.getAuthServiceUrl() + "/api/v1/auth/login")
         .contentType(MediaType.APPLICATION_JSON)

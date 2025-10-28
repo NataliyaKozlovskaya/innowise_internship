@@ -79,15 +79,48 @@ public class JwtTokenProvider {
    */
   public boolean validateToken(String token) {
     try {
-      Jwts.parser()
+      if (token == null || token.trim().isEmpty()) {
+        log.warn("Token is null or empty");
+        return false;
+      }
+
+      if (!isValidJwtFormat(token)) {
+        log.warn("Invalid JWT format");
+        return false;
+      }
+
+      Claims claims = Jwts.parser()
           .verifyWith(getSigningKey())
           .build()
-          .parseSignedClaims(token);
+          .parseSignedClaims(token)
+          .getPayload();
+
+      if (isTokenExpired(claims)) {
+        log.warn("Token expired");
+        return false;
+      }
+
       return true;
-    } catch (JwtException ex) {
+
+    } catch (JwtException | IllegalArgumentException ex) {
       log.error("Token validation error: {}", ex.getMessage());
       return false;
     }
+  }
+
+  private boolean isValidJwtFormat(String token) {
+    String[] parts = token.split("\\.");
+    return parts.length == 3;
+  }
+
+  private boolean isTokenExpired(Claims claims) {
+    return claims.getExpiration() != null &&
+        claims.getExpiration().before(new Date());
+  }
+
+  private boolean isValidIssuer(Claims claims) {
+    String expectedIssuer = "your-issuer";
+    return expectedIssuer.equals(claims.getIssuer());
   }
 
   /**
@@ -119,7 +152,7 @@ public class JwtTokenProvider {
       Instant now = Instant.now();
 
       Duration timeUntilExpiration = Duration.between(now, expirationInstant);
-      Duration threshold = Duration.ofDays(7);
+      Duration threshold = Duration.ofMinutes(30);
 
       return timeUntilExpiration.compareTo(threshold) <= 0;
     } catch (Exception e) {

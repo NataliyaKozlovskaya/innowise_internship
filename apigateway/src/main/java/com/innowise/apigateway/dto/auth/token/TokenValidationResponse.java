@@ -9,11 +9,4 @@ public record TokenValidationResponse(
     @NotBlank List<String> authorities
 ) {
 
-  public TokenValidationResponse withUsername(String username) {
-    return new TokenValidationResponse(this.valid, username, this.authorities);
-  }
-
-  public TokenValidationResponse withAuthorities(List<String> authorities) {
-    return new TokenValidationResponse(this.valid, this.username, authorities);
-  }
 }
