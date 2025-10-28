@@ -6,6 +6,7 @@ import com.innowise.user.dto.user.UserCreateResponse;
 import com.innowise.user.dto.user.UserDTO;
 import com.innowise.user.dto.user.UserWithCardDTO;
 import com.innowise.user.service.UserService;
+import com.innowise.user.service.impl.UserServiceImpl;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -52,8 +53,8 @@ public class UserController {
    * Get user by ID
    */
   @GetMapping("/{id}")
-  public ResponseEntity<UserCreateResponse> getUserById(@PathVariable String id) {
-    UserCreateResponse response = userService.getUserById(id);
+  public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
+    UserDTO response = userService.getUserById(id);
     return ResponseEntity.ok(response);
   }
 
@@ -70,9 +71,9 @@ public class UserController {
    * Get user by email address
    */
   @GetMapping("/email")
-  public ResponseEntity<UserCreateResponse> getUserByEmail(
+  public ResponseEntity<UserDTO> getUserByEmail(
       @Valid @RequestParam(name = "email") String email) {
-    UserCreateResponse response = userService.getUserByEmail(email);
+    UserDTO response = userService.getUserByEmail(email);
     return ResponseEntity.ok(response);
   }
 

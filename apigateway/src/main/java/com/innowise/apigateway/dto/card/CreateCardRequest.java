@@ -6,6 +6,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
+/**
+ * Record representing a card creation request dto
+ */
 public record CreateCardRequest(
     @NotBlank String number,
     @NotBlank String holder,

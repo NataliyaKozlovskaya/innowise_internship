@@ -60,9 +60,9 @@ public class UserServiceImpl implements UserService {
   @Transactional(readOnly = true)
 //  @Cacheable(key = "#id", unless = "#result == null")
   @Override
-  public UserCreateResponse getUserById(String id) {
+  public UserDTO getUserById(String id) {
     return userRepository.findById(id)
-        .map(userMapper::toUserCreateResponse)
+        .map(userMapper::toUserDTO)
         .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
   }
 
@@ -90,9 +90,9 @@ public class UserServiceImpl implements UserService {
   @Transactional(readOnly = true)
 //  @Cacheable(key = "'email:' + #email", unless = "#result == null")
   @Override
-  public UserCreateResponse getUserByEmail(String email) {
+  public UserDTO getUserByEmail(String email) {
     return userRepository.findByEmail(email)
-        .map(userMapper::toUserCreateResponse)
+        .map(userMapper::toUserDTO)
         .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
   }
 

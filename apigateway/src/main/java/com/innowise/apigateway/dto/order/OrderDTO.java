@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Data Transfer Object representing an Order for API responses
+ * DTO representing an Order for API responses
  */
 public record OrderDTO(
     @NotBlank String userId,

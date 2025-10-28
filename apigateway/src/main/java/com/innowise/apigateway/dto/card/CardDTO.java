@@ -6,6 +6,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
+/**
+ * DTO representing a payment card entity in the system
+ */
 public record CardDTO(
     @NotBlank String number,
     @NotBlank String holder,

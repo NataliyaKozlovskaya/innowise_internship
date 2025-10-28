@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 /**
- * Data Transfer Object representing a User for API responses
+ * DTO representing a User for API responses
  */
 public record UserDTO(
     @NotBlank String name,

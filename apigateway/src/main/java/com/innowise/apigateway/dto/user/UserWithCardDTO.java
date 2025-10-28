@@ -7,6 +7,9 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * DTO representing a user entity with associated card information
+ */
 public record UserWithCardDTO(String name,
                               @NotBlank String surname,
                               @NotNull LocalDate birthDate,

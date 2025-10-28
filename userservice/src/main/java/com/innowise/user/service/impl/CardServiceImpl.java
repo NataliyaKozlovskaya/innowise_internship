@@ -11,7 +11,6 @@ import com.innowise.user.repository.CardRepository;
 import com.innowise.user.service.CardService;
 import com.innowise.user.service.UserService;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

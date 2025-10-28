@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
- * Data Transfer Object representing an item within an order for API responses
+ * DTO representing an item within an order for API responses
  */
 public record OrderItemDTO(
     @NotNull Long itemId,

@@ -28,7 +28,7 @@ public interface UserService {
    * @param id user identifier
    * @return userDTO
    */
-  UserCreateResponse getUserById(String id);
+  UserDTO getUserById(String id);
 
   /**
    * Find userEntity by identifier
@@ -52,7 +52,7 @@ public interface UserService {
    * @param email user email
    * @return user
    */
-  UserCreateResponse getUserByEmail(String email);
+  UserDTO getUserByEmail(String email);
 
   /**
    * Update user by identifier
