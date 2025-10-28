@@ -3,15 +3,20 @@ server:
 
 # JWT Configuration
 jwt:
-  secret: ${SECRET_KEY}
+  secret: ${JWT_SECRET}
   access-token:
     expiration: 3600000    # 1 hour in milliseconds
   refresh-token:
     expiration: 86400000   # 24 hours in milliseconds
 
+
 spring:
   application:
     name: authentication-service
+  config:
+    import: optional:file:./src/main/resources/application-local.yml
+  profiles:
+    active: local
 
   liquibase:
     enabled: false
@@ -21,7 +26,7 @@ spring:
     clear-checksums: true
 
   datasource:
-    url: ${USER_SERVICE_URL}
+    url: ${AUTH_DB_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver

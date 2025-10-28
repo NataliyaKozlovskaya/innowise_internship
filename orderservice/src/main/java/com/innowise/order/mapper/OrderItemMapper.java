@@ -7,10 +7,10 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 /**
- * Mapper for converting between OrderItem entity and OrderItemDTO.
- * Handles mapping of nested Item entity fields to flat DTO structure
+ * Mapper for converting between OrderItem entity and OrderItemDTO. Handles mapping of nested Item
+ * entity fields to flat DTO structure
  */
- @Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring")
 public interface OrderItemMapper {
 
   @Mapping(target = "itemId", source = "item.id")

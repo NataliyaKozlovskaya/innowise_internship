@@ -1,15 +1,17 @@
 package com.innowise.order.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
- * Data Transfer Object representing an item within an order for API responses
+ * DTO representing an item within an order for API responses
  */
 public record OrderItemDTO(
-    Long itemId,
-    String itemName,
-    BigDecimal itemPrice,
-    Integer quantity
+    @NotNull Long itemId,
+    @NotBlank String itemName,
+    @NotNull BigDecimal itemPrice,
+    @NotNull Integer quantity
 ) {
 
 }

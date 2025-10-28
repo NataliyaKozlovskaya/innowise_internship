@@ -54,6 +54,15 @@ public class CardController {
   }
 
   /**
+   * Get card by userID
+   */
+  @GetMapping("/user/{id}")
+  public ResponseEntity<List<CardDTO>> getCardByUserId(@PathVariable String id) {
+    List<CardDTO> response = cardService.getCardByUserId(id);
+    return ResponseEntity.ok(response);
+  }
+
+  /**
    * Get cards by list of IDs
    */
   @GetMapping("/batch")

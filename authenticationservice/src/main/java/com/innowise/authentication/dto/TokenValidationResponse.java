@@ -2,6 +2,9 @@ package com.innowise.authentication.dto;
 
 import java.util.List;
 
+/**
+ * Record representing a token validation response dto
+ */
 public record TokenValidationResponse(
     boolean valid,
     String username,

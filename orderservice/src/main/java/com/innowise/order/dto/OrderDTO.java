@@ -1,16 +1,18 @@
 package com.innowise.order.dto;
 
 import com.innowise.order.enums.OrderStatus;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Data Transfer Object representing an Order for API responses
+ * DTO representing an Order for API responses
  */
 public record OrderDTO(
-    String userId,
-    OrderStatus status,
-    LocalDateTime creationDate,
+    @NotBlank String userId,
+    @NotNull OrderStatus status,
+    @NotNull LocalDateTime creationDate,
     List<OrderItemDTO> orderItems
 ) {
 

@@ -16,6 +16,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
+/**
+ * Entity representing user roles and permissions in the system
+ */
 @Entity
 @Table(name = "user_roles")
 @Getter
@@ -42,6 +45,4 @@ public class UserRole {
   @JoinColumn(name = "user_login", referencedColumnName = "login", insertable = false, updatable = false)
   private UserCredentials userCredentials;
 
-  public UserRole(String login, String role) {
-  }
 }

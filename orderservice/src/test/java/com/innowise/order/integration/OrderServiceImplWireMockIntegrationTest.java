@@ -107,7 +107,7 @@ class OrderServiceImplWireMockIntegrationTest {
         {
             "name": "Anna",
             "surname": "Ivanova",
-            "birthDate": "1985-08-20", 
+            "birthDate": "1985-08-20",
             "email": "anna.ivanova@example.com"
         }
         """);
@@ -200,7 +200,7 @@ class OrderServiceImplWireMockIntegrationTest {
         {
             "name": "Anna",
             "surname": "Ivanova",
-            "birthDate": "1985-08-20", 
+            "birthDate": "1985-08-20",
             "email": "anna.ivanova@example.com"
         }
         """);

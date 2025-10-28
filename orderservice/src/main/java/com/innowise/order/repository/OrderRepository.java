@@ -21,4 +21,16 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
    * Get Orders by statuses
    */
   List<Order> findByStatusIn(List<OrderStatus> statuses);
+
+  /**
+   * Find all orders by user id
+   */
+  List<Order> findAllByUserId(String userId);
+
+  /**
+   * Delete orders by userId
+   *
+   * @param userId user id
+   */
+  void deleteByUserId(String userId);
 }

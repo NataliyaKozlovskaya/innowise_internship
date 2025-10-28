@@ -3,6 +3,7 @@ package com.innowise.order.config;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.innowise.order.rest.UserServiceProperties;
 import java.time.Duration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,12 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class RestTemplateConfig {
 
+  private final UserServiceProperties userServiceProperties;
+
+  public RestTemplateConfig(UserServiceProperties userServiceProperties) {
+    this.userServiceProperties = userServiceProperties;
+  }
+
   @Bean
   public RestTemplate restTemplate(RestTemplateBuilder builder) {
     ObjectMapper objectMapper = new ObjectMapper();
@@ -26,7 +33,7 @@ public class RestTemplateConfig {
     converter.setObjectMapper(objectMapper);
 
     return builder
-        .rootUri("http://user-service:8088")
+        .rootUri(userServiceProperties.getUrl())
         .setConnectTimeout(Duration.ofSeconds(5))
         .setReadTimeout(Duration.ofSeconds(30))
         .additionalMessageConverters(converter)

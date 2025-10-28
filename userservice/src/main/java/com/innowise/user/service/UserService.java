@@ -2,7 +2,9 @@ package com.innowise.user.service;
 
 import com.innowise.user.dto.user.CreateUserRequest;
 import com.innowise.user.dto.user.UpdateUserRequest;
+import com.innowise.user.dto.user.UserCreateResponse;
 import com.innowise.user.dto.user.UserDTO;
+import com.innowise.user.dto.user.UserWithCardDTO;
 import com.innowise.user.entity.User;
 import java.util.List;
 
@@ -18,7 +20,7 @@ public interface UserService {
    * @param request user to be created
    * @return user
    */
-  UserDTO createUser(CreateUserRequest request);
+  UserCreateResponse createUser(CreateUserRequest request);
 
   /**
    * Find user by identifier
@@ -66,5 +68,5 @@ public interface UserService {
    *
    * @param id user identifier
    */
-  void deleteUser(String id);
+  UserWithCardDTO deleteUser(String id);
 }

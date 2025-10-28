@@ -13,4 +13,9 @@ public interface CardRepository extends JpaRepository<Card, Long> {
    * Find all cards whose id is contained in the provided list
    */
   List<Card> findByIdIn(List<Long> ids);
+
+  /**
+   * Find all user cards by user id
+   */
+  List<Card> findAllByUserUuid(String uuid);
 }

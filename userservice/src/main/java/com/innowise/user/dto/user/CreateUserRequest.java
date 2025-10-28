@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import java.time.LocalDate;
 
+/**
+ * Record representing a user creation request dto
+ */
 public record CreateUserRequest(
     @NotBlank(message = "Id is required") String uuid,
     @NotBlank(message = "Name is required") String name,

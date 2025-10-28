@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -21,6 +22,9 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+/**
+ * Entity representing user authentication credentials in the system
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -47,9 +51,8 @@ public class UserCredentials {
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
 
-  @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-  @JoinColumn(name = "login", referencedColumnName = "login")
-  private List<UserRole> roles;
+  @OneToMany(mappedBy = "userCredentials", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  private List<UserRole> roles = new ArrayList<>();
 
   public List<String> getRolesAsStrings() {
     return roles.stream()

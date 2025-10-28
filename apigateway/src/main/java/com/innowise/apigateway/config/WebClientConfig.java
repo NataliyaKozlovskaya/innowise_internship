@@ -1,0 +1,17 @@
+package com.innowise.apigateway.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
+
+/**
+ * Configuration class for setting up WebClient instances
+ */
+@Configuration
+public class WebClientConfig {
+
+  @Bean
+  public WebClient webClient() {
+    return WebClient.builder().build();
+  }
+}

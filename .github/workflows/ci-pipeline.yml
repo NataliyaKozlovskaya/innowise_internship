@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: NAKozlovskaya
-  SERVICES: "authenticationservice userservice orderservice"
+  SERVICES: "authenticationservice userservice orderservice apigateway"
   IMAGE_NAME: NAKozlovskaya/innowise-internship
 
 jobs:
@@ -43,7 +43,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [ userservice, authenticationservice, orderservice ]
+        service: [ userservice, authenticationservice, orderservice, apigateway ]
 
     steps:
       - name: Checkout code
@@ -100,11 +100,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      #      - name: Download coverage artifacts
-      #        uses: actions/download-artifact@v4
-      #        with:
-      #          path: coverage-reports
-
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -115,7 +110,8 @@ jobs:
         run: |
           cd userservice && mvn clean compile -DskipTests
           cd ../authenticationservice && mvn clean compile -DskipTests
-          cd ../orderservice && mvn clean compile -DskipTests    
+          cd ../orderservice && mvn clean compile -DskipTests  
+          cd ../apigateway && mvn clean compile -DskipTests
 
       - name: SonarQube Analysis with Coverage
         env:
@@ -125,7 +121,6 @@ jobs:
           cd userservice
           mvn sonar:sonar \
             -Dsonar.java.binaries=target/classes \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
             -Dsonar.organization=nataliyakozlovskaya \
             -Dsonar.projectKey=NataliyaKozlovskaya_innowise_internship \
             -Dsonar.projectName='Innowise Project' \
@@ -135,53 +130,6 @@ jobs:
             -Dsonar.issue.ignore.multicriteria.e1.ruleKey=squid:S00116 \
             -Dsonar.issue.ignore.multicriteria.e1.resourceKey=**/*
   
-  
-  
-
-  #          # User Service
-  #          cd userservice
-  #          mvn sonar:sonar \
-  #            -Dsonar.java.binaries=target/classes \
-  #            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-  #            -Dsonar.organization=nataliyakozlovskaya \
-  #            -Dsonar.projectKey=nataliyakozlovskaya-user-service \
-  #            -Dsonar.projectName='User Service' \
-  #            -Dsonar.branch.name=main \
-  #            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-  #            -Dsonar.qualitygate.wait=true \
-  #            -Dsonar.issue.ignore.multicriteria=e1 \
-  #            -Dsonar.issue.ignore.multicriteria.e1.ruleKey=squid:S00116 \
-  #            -Dsonar.issue.ignore.multicriteria.e1.resourceKey=**/*
-  #
-  #          # Auth Service
-  #          cd ../authenticationservice
-  #          mvn sonar:sonar \
-  #            -Dsonar.java.binaries=target/classes \
-  #            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-  #            -Dsonar.organization=nataliyakozlovskaya \
-  #            -Dsonar.projectKey=nataliyakozlovskaya-auth-service \
-  #            -Dsonar.projectName='Auth Service' \
-  #            -Dsonar.branch.name=main \
-  #            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-  #            -Dsonar.qualitygate.wait=true \
-  #            -Dsonar.issue.ignore.multicriteria=e1 \
-  #            -Dsonar.issue.ignore.multicriteria.e1.ruleKey=squid:S00116 \
-  #            -Dsonar.issue.ignore.multicriteria.e1.resourceKey=**/*
-  #
-  #          # Order Service
-  #          cd ../orderservice
-  #          mvn sonar:sonar \
-  #            -Dsonar.java.binaries=target/classes \
-  #            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-  #            -Dsonar.organization=nataliyakozlovskaya \
-  #            -Dsonar.projectKey=nataliyakozlovskaya-order-service \
-  #            -Dsonar.projectName='Order Service' \
-  #            -Dsonar.branch.name=main \
-  #            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-  #            -Dsonar.qualitygate.wait=true \
-  #            -Dsonar.issue.ignore.multicriteria=e1 \
-  #            -Dsonar.issue.ignore.multicriteria.e1.ruleKey=squid:S00116 \
-  #            -Dsonar.issue.ignore.multicriteria.e1.resourceKey=**/*
 
   docker-build:
     name: Build and Push Docker Images
@@ -191,7 +139,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [ userservice, authenticationservice, orderservice ]
+        service: [ userservice, authenticationservice, orderservice, apigateway ]
 
     steps:
       - name: Checkout code

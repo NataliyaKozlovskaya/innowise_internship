@@ -15,7 +15,7 @@ import lombok.Setter;
 /**
  * Entity class representing an item
  */
- @Entity
+@Entity
 @Table(name = "items")
 @Getter
 @Setter

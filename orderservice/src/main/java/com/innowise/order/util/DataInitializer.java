@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Component responsible for initializing database with sample data on application startup
  */
- @Slf4j
+@Slf4j
 @Component
 @RequiredArgsConstructor
 @Transactional
