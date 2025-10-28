@@ -88,42 +88,6 @@ public class AuthenticationGlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
   }
 
-//  @ExceptionHandler(AuthenticationException.class)
-//  public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
-//    log.error("Authentication error: {}", ex.getMessage());
-//
-//    ErrorResponse error = new ErrorResponse(
-//        HttpStatus.UNAUTHORIZED.value(),
-//        "AUTHENTICATION_FAILED",
-//        "Authentication failed"
-//    );
-//    return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
-//  }
-
-//  @ExceptionHandler(AccessDeniedException.class)
-//  public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
-//    log.error("Access denied: {}", ex.getMessage());
-//
-//    ErrorResponse error = new ErrorResponse(
-//        HttpStatus.FORBIDDEN.value(),
-//        "ACCESS_DENIED",
-//        "Access denied"
-//    );
-//    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
-//  }
-
-//  @ExceptionHandler(BadCredentialsException.class)
-//  public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
-//    log.error("Bad credentials: {}", ex.getMessage());
-//
-//    ErrorResponse error = new ErrorResponse(
-//        HttpStatus.UNAUTHORIZED.value(),
-//        "BAD_CREDENTIALS",
-//        "Invalid login or password"
-//    );
-//    return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
-//  }
-
   @ExceptionHandler(InvalidTokenException.class)
   public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException ex) {
     log.error("Invalid token: {}", ex.getMessage());

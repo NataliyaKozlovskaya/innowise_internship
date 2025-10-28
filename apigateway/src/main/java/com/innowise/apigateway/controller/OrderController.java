@@ -5,7 +5,6 @@ import com.innowise.apigateway.enums.OrderStatus;
 import com.innowise.apigateway.service.OrderService;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -13,6 +12,9 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+/**
+ * Spring WebFlux controller handling order-related HTTP endpoints
+ */
 @Slf4j
 @Component
 public class OrderController {
@@ -50,7 +52,7 @@ public class OrderController {
         .map(ids -> Arrays.stream(ids.split(","))
             .map(String::trim)
             .map(Long::valueOf)
-            .collect(Collectors.toList()))
+            .toList())
         .flatMap(orderService::getOrdersByIds)
         .flatMap(orders -> {
           if (orders.isEmpty()) {
@@ -78,7 +80,7 @@ public class OrderController {
         .map(statuses -> Arrays.stream(statuses.split(","))
             .map(String::trim)
             .map(OrderStatus::valueOf)
-            .collect(Collectors.toList()))
+            .toList())
         .flatMap(orderService::getOrdersByStatuses)
         .flatMap(orders -> ServerResponse.ok().bodyValue(orders))
         .switchIfEmpty(ServerResponse.ok().bodyValue(Collections.emptyList()))

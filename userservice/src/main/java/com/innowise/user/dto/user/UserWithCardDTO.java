@@ -7,6 +7,9 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * DTO representing a user with their associated cards
+ */
 public record UserWithCardDTO(
     @NotBlank String name,
     @NotBlank String surname,

@@ -12,6 +12,9 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+/**
+ * Spring WebFlux controller handling card-related HTTP endpoints
+ */
 @Slf4j
 @Component
 public class CardController {
@@ -46,7 +49,6 @@ public class CardController {
 
   public Mono<ServerResponse> getCardsByIds(ServerRequest request) {
     try {
-      // Получаем все значения параметра ids (могут быть multiple: ?ids=1&ids=2)
       List<String> idStrings = request.queryParams().get("ids");
 
       if (idStrings == null || idStrings.isEmpty()) {
@@ -57,7 +59,7 @@ public class CardController {
           .flatMap(str -> Arrays.stream(str.split(",")))
           .map(String::trim)
           .map(Long::valueOf)
-          .collect(Collectors.toList());
+          .toList();
 
       return cardService.getCardsByIds(ids)
           .flatMap(cards -> {

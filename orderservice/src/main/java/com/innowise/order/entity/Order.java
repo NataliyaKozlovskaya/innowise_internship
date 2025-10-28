@@ -23,7 +23,7 @@ import org.hibernate.annotations.CreationTimestamp;
 /**
  * Entity class representing a customer order
  */
- @Entity
+@Entity
 @Table(name = "orders")
 @Getter
 @Setter

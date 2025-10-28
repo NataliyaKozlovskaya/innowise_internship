@@ -17,7 +17,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+/**
+ * REST controller for managing order operations.
+ * Provides endpoints for creating, retrieving, updating, and deleting orders.
+ */
+ @RestController
 @RequestMapping("/api/v1/orders")
 public class OrderController {
 

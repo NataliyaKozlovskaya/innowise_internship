@@ -6,7 +6,6 @@ import com.innowise.user.dto.card.CreateCardRequest;
 import com.innowise.user.dto.card.UpdateCardRequest;
 import java.util.List;
 
-
 /**
  * Service interface for managing Card entities. Provides comprehensive CRUD operations for users
  * and their payment cards.
@@ -44,7 +43,6 @@ public interface CardService {
    * @return list of Cards
    */
   List<CardDTO> getCardsByIds(List<Long> ids);
-
 
   /**
    * Update card by identifier

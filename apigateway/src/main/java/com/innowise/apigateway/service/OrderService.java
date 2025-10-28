@@ -171,7 +171,8 @@ public class OrderService {
         .retrieve()
         .bodyToMono(OrderDTO.class)
         .doOnError(
-            error -> log.error("Failed to get order by id in OrderService: {}", error.getMessage()));
+            error -> log.error("Failed to get order by id in OrderService: {}",
+                error.getMessage()));
   }
 
   private Mono<OrderDTO> createOrderInOrderService(CreateOrderRequest request) {

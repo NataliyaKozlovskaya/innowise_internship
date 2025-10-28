@@ -14,5 +14,4 @@ public record RegistrationRequest(@NotBlank String login,
                                   @NotBlank String surname,
                                   @NotNull LocalDate birthDate,
                                   @Email String email) {
-
 }

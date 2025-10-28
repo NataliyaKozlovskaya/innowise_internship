@@ -148,17 +148,18 @@ public class AuthService {
   }
 
   private Mono<TokenValidationResponse> createValidateTokenInAuthService(String token) {
-    System.out.println("🔍 GATEWAY: Validating token: " + (token != null ?
-        token.substring(0, Math.min(10, token.length())) + "..." : "null"));
+    log.info("GATEWAY: Validating token: {}", token != null ?
+        token.substring(0, Math.min(10, token.length())) + "..." : "null");
     String fullUrl = serviceConfig.getAuthServiceUrl() + "/api/v1/auth/validate?token=" + token;
+
     return webClient.post()
         .uri(fullUrl)
         .retrieve()
         .bodyToMono(TokenValidationResponse.class)
-        .doOnNext(response -> System.out.println(
-            "🔍 GATEWAY: Auth service response - valid: " + response.valid()))
-        .doOnError(
-            error -> System.out.println("🔍 GATEWAY: Auth service error: " + error.getMessage()))
+        .doOnNext(response ->
+            log.info("GATEWAY: Auth service response - valid: {}", response.valid()))
+        .doOnError(error ->
+            log.error("GATEWAY: Auth service error: {}", error.getMessage()))
         .onErrorReturn(new TokenValidationResponse(false, null, null));
   }
 
@@ -176,6 +177,7 @@ public class AuthService {
   private Mono<UserCreateResponse> createUserInUserService(RegistrationRequest request) {
     String uuid = UUID.randomUUID().toString();
     log.info("Generated UUID for user: {}", uuid);
+
     UserCreateRequest userRequest = new UserCreateRequest(
         uuid,
         request.name(),

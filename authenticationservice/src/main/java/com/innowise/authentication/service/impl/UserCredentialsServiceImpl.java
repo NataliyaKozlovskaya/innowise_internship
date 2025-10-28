@@ -1,9 +1,9 @@
 package com.innowise.authentication.service.impl;
 
-import com.innowise.authentication.dto.LoginRequest;
-import com.innowise.authentication.dto.RefreshTokenRequest;
 import com.innowise.authentication.dto.AuthCreateRequest;
+import com.innowise.authentication.dto.LoginRequest;
 import com.innowise.authentication.dto.LoginResponse;
+import com.innowise.authentication.dto.RefreshTokenRequest;
 import com.innowise.authentication.dto.TokenValidationResponse;
 import com.innowise.authentication.dto.UserCredentialsDataRecovery;
 import com.innowise.authentication.dto.UserRoleDTO;
@@ -15,7 +15,6 @@ import com.innowise.authentication.exception.UserNotFoundException;
 import com.innowise.authentication.mapper.UserRoleMapper;
 import com.innowise.authentication.repository.UserCredentialsRepository;
 import com.innowise.authentication.repository.UserRoleRepository;
-import com.innowise.authentication.rest.UserServiceClient;
 import com.innowise.authentication.security.JwtTokenProvider;
 import com.innowise.authentication.service.UserCredentialsService;
 import java.util.List;
@@ -34,19 +33,17 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
   private static final String USER_NOT_FOUND = "User not found with id: ";
   private final UserCredentialsRepository userCredentialsRepository;
   private final UserRoleRepository userRoleRepository;
-  private final UserServiceClient userServiceClient;
   private final PasswordEncoder passwordEncoder;
   private final JwtTokenProvider jwtTokenProvider;
   private final UserRoleMapper userRoleMapper;
 
   public UserCredentialsServiceImpl(UserCredentialsRepository userCredentialsRepository,
-      UserRoleRepository userRoleRepository, UserServiceClient userServiceClient,
+      UserRoleRepository userRoleRepository,
       PasswordEncoder passwordEncoder,
       JwtTokenProvider jwtTokenProvider,
       UserRoleMapper userRoleMapper) {
     this.userCredentialsRepository = userCredentialsRepository;
     this.userRoleRepository = userRoleRepository;
-    this.userServiceClient = userServiceClient;
     this.passwordEncoder = passwordEncoder;
     this.jwtTokenProvider = jwtTokenProvider;
     this.userRoleMapper = userRoleMapper;

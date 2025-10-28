@@ -1,6 +1,5 @@
 package com.innowise.user.service.impl;
 
-
 import com.innowise.user.dto.card.CardDTO;
 import com.innowise.user.dto.user.CreateUserRequest;
 import com.innowise.user.dto.user.UpdateUserRequest;
@@ -103,7 +102,7 @@ public class UserServiceImpl implements UserService {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND + id));
 
-    if(userRepository.findByEmail(request.email()).isPresent()){
+    if (userRepository.findByEmail(request.email()).isPresent()) {
       log.error("User can`t be updated, email {} already exist ", request.email());
       throw new EmailAlreadyExistsException("User can`t be updated, email already exist");
     }
@@ -133,7 +132,8 @@ public class UserServiceImpl implements UserService {
     evictEmailCache(user.getEmail());
     userRepository.delete(user);
 
-    return new UserWithCardDTO(user.getName(), user.getSurname(), user.getBirthDate(), user.getEmail(), cardDTOList);
+    return new UserWithCardDTO(user.getName(), user.getSurname(), user.getBirthDate(),
+        user.getEmail(), cardDTOList);
   }
 
   /**

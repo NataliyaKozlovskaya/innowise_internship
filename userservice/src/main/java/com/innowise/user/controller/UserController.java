@@ -6,7 +6,6 @@ import com.innowise.user.dto.user.UserCreateResponse;
 import com.innowise.user.dto.user.UserDTO;
 import com.innowise.user.dto.user.UserWithCardDTO;
 import com.innowise.user.service.UserService;
-import com.innowise.user.service.impl.UserServiceImpl;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;

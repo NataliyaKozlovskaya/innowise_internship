@@ -6,10 +6,10 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 /**
- * Mapper for converting between Order entity and OrderDTO.
- * Uses OrderItemMapper for mapping nested OrderItem collections
+ * Mapper for converting between Order entity and OrderDTO. Uses OrderItemMapper for mapping nested
+ * OrderItem collections
  */
- @Mapper(componentModel = "spring", uses = OrderItemMapper.class)
+@Mapper(componentModel = "spring", uses = OrderItemMapper.class)
 public interface OrderMapper {
 
   @Mapping(target = "orderItems", source = "orderItems")

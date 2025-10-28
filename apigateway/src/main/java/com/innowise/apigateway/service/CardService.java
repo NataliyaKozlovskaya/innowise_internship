@@ -25,7 +25,6 @@ public class CardService {
     this.serviceConfig = serviceConfig;
   }
 
-
   public Mono<CardDTO> getCardById(Long id) {
     log.info("API Gateway: Starting find card in CardService: {}", id);
 

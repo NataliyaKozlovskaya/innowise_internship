@@ -118,11 +118,6 @@ public class JwtTokenProvider {
         claims.getExpiration().before(new Date());
   }
 
-  private boolean isValidIssuer(Claims claims) {
-    String expectedIssuer = "your-issuer";
-    return expectedIssuer.equals(claims.getIssuer());
-  }
-
   /**
    * Extracts the username (subject) from a JWT token
    *

@@ -166,6 +166,9 @@ public class UserService {
             log.error("Failed to delete card by id in CardService: {}", error.getMessage()));
   }
 
+  /**
+   * Rollback of deleted user credentials
+   */
   private Mono<Void> rollbackAuthServiceDeletion(UserCredentialsDataRecovery data) {
     log.info("API Gateway: Rolling back AuthService deletion for user {}", data.uuid());
     return webClient.post()
@@ -180,6 +183,9 @@ public class UserService {
                 data.uuid(), error.getMessage()));
   }
 
+  /**
+   * Rollback of deleted user
+   */
   private Mono<UserCreateResponse> rollbackUserDeletion(String userId,
       UserWithCardDTO userResponse) {
     log.info("API Gateway: Rolling back UserService deletion for user {}", userId);

@@ -9,6 +9,10 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+/**
+ * Router filter component for JWT authentication. Intercepts incoming HTTP requests and validates
+ * JWT tokens for securing API endpoints.
+ */
 @Component
 public class JwtRouterFilter implements HandlerFilterFunction<ServerResponse, ServerResponse> {
 

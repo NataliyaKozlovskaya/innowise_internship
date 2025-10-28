@@ -10,6 +10,9 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+/**
+ * Spring WebFlux controller handling user-related HTTP endpoints
+ */
 @Slf4j
 @Component
 public class UserController {

@@ -11,6 +11,9 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+/**
+ * Configuration class for defining API routes and endpoint mappings
+ */
 @Configuration
 public class RouterConfig {
 

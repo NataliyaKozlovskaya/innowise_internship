@@ -13,5 +13,4 @@ public record UserCreateRequest(@NotBlank String uuid,
                                 @NotBlank String surname,
                                 @NotNull LocalDate birthDate,
                                 @Email String email) {
-
 }

@@ -22,6 +22,9 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+/**
+ * Entity representing user authentication credentials in the system
+ */
 @Getter
 @Setter
 @NoArgsConstructor
