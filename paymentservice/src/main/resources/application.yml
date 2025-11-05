@@ -1,0 +1,36 @@
+server:
+  port: 8066
+
+spring:
+  application:
+    name: payment-service
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/paymentdb
+      auto-index-creation: true
+  
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        default_schema: payment_schema
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+#service:
+#  user:
+#    url: http://user-service:8088
+#    methodGetUserById: /api/v1/users/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  health:
+    redis:
+      enabled: false

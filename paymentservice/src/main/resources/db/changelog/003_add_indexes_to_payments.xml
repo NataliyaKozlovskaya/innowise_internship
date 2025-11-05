@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="002-1" author="NAKozlovskaya">
+      <comment>Create indexes to payments table</comment>
+
+      <createIndex tableName="payments schemaName=payment_schema" indexName="idx_payments_order_id">
+        <column name="order_id"/>
+      </createIndex>
+
+      <createIndex tableName="payments schemaName=payment_schema" indexName="idx_payments_user_id">
+        <column name="user_id"/>
+      </createIndex>
+
+      <createIndex tableName="payments schemaName=payment_schema" indexName="idx_payments_status">
+        <column name="status"/>
+      </createIndex>
+
+    </changeSet>
+
+  </databaseChangeLog>
