@@ -1,15 +1,19 @@
 package com.innowise.apigateway.config;
 
-import com.innowise.apigateway.controller.AuthController;
-import com.innowise.apigateway.controller.CardController;
-import com.innowise.apigateway.controller.OrderController;
-import com.innowise.apigateway.controller.UserController;
+import com.innowise.apigateway.handler.AuthHandler;
+import com.innowise.apigateway.handler.CardHandler;
+import com.innowise.apigateway.handler.OrderHandler;
+import com.innowise.apigateway.handler.UserHandler;
 import com.innowise.apigateway.filter.JwtRouterFilter;
+import java.time.Instant;
+import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
+import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Mono;
 
 /**
  * Configuration class for defining API routes and endpoint mappings
@@ -17,55 +21,67 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 @Configuration
 public class RouterConfig {
 
-  private final AuthController authController;
-  private final UserController userController;
-  private final OrderController orderController;
-  private final CardController cardController;
+  private final AuthHandler authHandler;
+  private final UserHandler userHandler;
+  private final OrderHandler orderHandler;
+  private final CardHandler cardHandler;
   private final JwtRouterFilter jwtFilter;
 
-  public RouterConfig(AuthController authController,
-      UserController userController,
-      OrderController orderController,
-      CardController cardController,
-      JwtRouterFilter jwtFilter) {
-    this.authController = authController;
-    this.userController = userController;
-    this.orderController = orderController;
-    this.cardController = cardController;
+  public RouterConfig(AuthHandler authHandler, UserHandler userHandler, OrderHandler orderHandler,
+      CardHandler cardHandler, JwtRouterFilter jwtFilter) {
+    this.authHandler = authHandler;
+    this.userHandler = userHandler;
+    this.orderHandler = orderHandler;
+    this.cardHandler = cardHandler;
     this.jwtFilter = jwtFilter;
   }
 
   @Bean
   public RouterFunction<ServerResponse> route() {
     return RouterFunctions.route()
-        .POST("/api/v1/auth/register", authController::register)
-        .POST("/api/v1/auth/login", authController::login)
-        .POST("/api/v1/auth/refresh", authController::refreshToken)
-        .POST("/api/v1/auth/validate", authController::validateToken)
-
-        // Specific routes to general ones
-        .GET("/api/v1/users/batch", userController::getUsersByIds)
-        .GET("/api/v1/users/email", userController::getUserByEmail)
-        .GET("/api/v1/users/{id}", userController::getUserById)
-
-        .PATCH("/api/v1/users/{id}", userController::updateUser)
-        .DELETE("/api/v1/users/{id}", userController::deleteUser)
-
-        .POST("/api/v1/orders", orderController::createOrder)
-        .GET("/api/v1/orders/batch", orderController::getOrdersByIds)
-        .GET("/api/v1/orders/status", orderController::getOrdersByStatuses)
-        .GET("/api/v1/orders/{id}", orderController::getOrderById)
-        .PATCH("/api/v1/orders/{id}/status", orderController::updateOrderStatus)
-        .DELETE("/api/v1/orders/{id}", orderController::deleteOrder)
-
-        .GET("/api/v1/cards/batch", cardController::getCardsByIds)
-        .GET("/api/v1/cards/user/{id}", cardController::getCardByUserId)
-        .GET("/api/v1/cards/{id}", cardController::getCardById)  // general route AFTER specific
-        .PATCH("/api/v1/cards/{id}", cardController::updateCard)
-        .POST("/api/v1/cards", cardController::createCard)
-        .DELETE("/api/v1/cards/{id}", cardController::deleteCard)
-
         .filter(jwtFilter)
-        .build();
+        .path("/api/v1", builder -> builder
+            .path("/auth", authBuilder -> authBuilder
+                .POST("/register", authHandler::register)
+                .POST("/login", authHandler::login)
+                .POST("/refresh", authHandler::refreshToken)
+                .POST("/validate", authHandler::validateToken)
+            )
+            .path("/users", userBuilder -> userBuilder
+                .GET("/batch", userHandler::getUsersByIds)
+                .GET("/email", userHandler::getUserByEmail)
+                .GET("/{id}", userHandler::getUserById)
+                .PATCH("/{id}", userHandler::updateUser)
+                .DELETE("/{id}", userHandler::deleteUser)
+            )
+            .path("/orders", orderBuilder -> orderBuilder
+                .POST("/", orderHandler::createOrder)
+                .GET("/batch", orderHandler::getOrdersByIds)
+                .GET("/status", orderHandler::getOrdersByStatuses)
+                .GET("/{id}", orderHandler::getOrderById)
+                .PATCH("/{id}/status", orderHandler::updateOrderStatus)
+                .DELETE("/{id}", orderHandler::deleteOrder)
+            )
+            .path("/cards", cardBuilder -> cardBuilder
+                .GET("/batch", cardHandler::getCardsByIds)
+                .GET("/{id}", cardHandler::getCardByUserId)
+                .GET("/{id}", cardHandler::getCardById)
+                .PATCH("/{id}", cardHandler::updateCard)
+                .POST("/", cardHandler::createCard)
+                .DELETE("/{id}", cardHandler::deleteCard)
+            )
+        )
+                .onError(Exception.class, this::handleError)
+                .build();
+  }
+
+  private Mono<ServerResponse> handleError(Exception error, ServerRequest request) {
+    return ServerResponse.badRequest()
+        .bodyValue(Map.of(
+            "error", "Request processing failed",
+            "message", error.getMessage(),
+            "path", request.path(),
+            "timestamp", Instant.now()
+        ));
   }
 }

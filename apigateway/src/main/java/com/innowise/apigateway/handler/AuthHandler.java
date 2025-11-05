@@ -1,9 +1,10 @@
-package com.innowise.apigateway.controller;
+package com.innowise.apigateway.handler;
 
 import com.innowise.apigateway.dto.auth.login.LoginRequest;
 import com.innowise.apigateway.dto.auth.registration.RegistrationRequest;
 import com.innowise.apigateway.dto.auth.registration.RegistrationResponse;
-import com.innowise.apigateway.service.AuthService;
+import com.innowise.apigateway.dto.auth.token.RefreshTokenRequest;
+import com.innowise.apigateway.manager.AuthOperationManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -16,17 +17,17 @@ import reactor.core.publisher.Mono;
  */
 @Slf4j
 @Component
-public class AuthController {
+public class AuthHandler {
 
-  private final AuthService authService;
+  private final AuthOperationManager authOperationManager;
 
-  public AuthController(AuthService authService) {
-    this.authService = authService;
+  public AuthHandler(AuthOperationManager authOperationManager) {
+    this.authOperationManager = authOperationManager;
   }
 
   public Mono<ServerResponse> register(ServerRequest request) {
     return request.bodyToMono(RegistrationRequest.class)
-        .flatMap(authService::registerUser)
+        .flatMap(authOperationManager::registerUser)
         .flatMap(user -> ServerResponse.status(HttpStatus.CREATED).bodyValue(user))
         .onErrorResume(error -> {
 
@@ -39,7 +40,7 @@ public class AuthController {
 
   public Mono<ServerResponse> login(ServerRequest request) {
     return request.bodyToMono(LoginRequest.class)
-        .flatMap(authService::loginUser)
+        .flatMap(authOperationManager::loginUser)
         .flatMap(body -> ServerResponse.status(HttpStatus.OK).bodyValue(body))
         .onErrorResume(error -> {
           log.error("Login failed for user ", error.getMessage());
@@ -48,8 +49,8 @@ public class AuthController {
   }
 
   public Mono<ServerResponse> refreshToken(ServerRequest request) {
-    return request.bodyToMono(LoginRequest.class)
-        .flatMap(authService::loginUser)
+    return request.bodyToMono(RefreshTokenRequest.class)
+        .flatMap(authOperationManager::refreshToken)
         .flatMap(body -> ServerResponse.status(HttpStatus.OK).bodyValue(body))
         .onErrorResume(error -> {
           log.error("Refresh token failed ", error.getMessage());
@@ -60,7 +61,7 @@ public class AuthController {
   public Mono<ServerResponse> validateToken(ServerRequest request) {
     return Mono.fromCallable(() -> request.queryParam("token")
             .orElseThrow(() -> new IllegalArgumentException("Token parameter is required")))
-        .flatMap(authService::validateToken)
+        .flatMap(authOperationManager::validateToken)
         .flatMap(response -> ServerResponse.ok().bodyValue(response))
         .onErrorResume(error -> {
           log.error("Validation of token failed ", error);

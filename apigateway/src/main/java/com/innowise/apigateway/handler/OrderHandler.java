@@ -1,8 +1,8 @@
-package com.innowise.apigateway.controller;
+package com.innowise.apigateway.handler;
 
 import com.innowise.apigateway.dto.order.CreateOrderRequest;
 import com.innowise.apigateway.enums.OrderStatus;
-import com.innowise.apigateway.service.OrderService;
+import com.innowise.apigateway.manager.OrderOperationManager;
 import java.util.Arrays;
 import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
@@ -13,21 +13,21 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 /**
- * Spring WebFlux controller handling order-related HTTP endpoints
+ * Spring WebFlux handler handling order-related HTTP endpoints
  */
 @Slf4j
 @Component
-public class OrderController {
+public class OrderHandler {
 
-  private final OrderService orderService;
+  private final OrderOperationManager orderOperationManager;
 
-  public OrderController(OrderService orderService) {
-    this.orderService = orderService;
+  public OrderHandler(OrderOperationManager orderOperationManager) {
+    this.orderOperationManager = orderOperationManager;
   }
 
   public Mono<ServerResponse> createOrder(ServerRequest request) {
     return request.bodyToMono(CreateOrderRequest.class)
-        .flatMap(orderService::createOrder)
+        .flatMap(orderOperationManager::createOrder)
         .flatMap(order -> ServerResponse.status(HttpStatus.CREATED).bodyValue(order))
         .onErrorResume(error -> {
           log.error("Creation order failed: {}", error.getMessage());
@@ -38,7 +38,7 @@ public class OrderController {
   public Mono<ServerResponse> getOrderById(ServerRequest request) {
     Long id = Long.valueOf(request.pathVariable("id"));
 
-    return orderService.getOrderById(id)
+    return orderOperationManager.getOrderById(id)
         .flatMap(order -> ServerResponse.ok().bodyValue(order))
         .onErrorResume(error -> {
           log.error("Get order with id {} failed", id, error.getMessage());
@@ -53,7 +53,7 @@ public class OrderController {
             .map(String::trim)
             .map(Long::valueOf)
             .toList())
-        .flatMap(orderService::getOrdersByIds)
+        .flatMap(orderOperationManager::getOrdersByIds)
         .flatMap(orders -> {
           if (orders.isEmpty()) {
             return ServerResponse.noContent().build();
@@ -81,7 +81,7 @@ public class OrderController {
             .map(String::trim)
             .map(OrderStatus::valueOf)
             .toList())
-        .flatMap(orderService::getOrdersByStatuses)
+        .flatMap(orderOperationManager::getOrdersByStatuses)
         .flatMap(orders -> ServerResponse.ok().bodyValue(orders))
         .switchIfEmpty(ServerResponse.ok().bodyValue(Collections.emptyList()))
         .onErrorResume(error -> {
@@ -106,7 +106,7 @@ public class OrderController {
     OrderStatus status = OrderStatus.valueOf(request.queryParam("status")
         .orElseThrow(() -> new IllegalArgumentException("Status parameter is required")));
 
-    return orderService.updateOrder(id, status)
+    return orderOperationManager.updateOrder(id, status)
         .flatMap(order -> ServerResponse.ok().bodyValue(order))
         .onErrorResume(error -> {
           log.error("Order was not updated with id {}", id, error);
@@ -117,7 +117,7 @@ public class OrderController {
   public Mono<ServerResponse> deleteOrder(ServerRequest request) {
     Long id = Long.valueOf(request.pathVariable("id"));
 
-    return orderService.deleteOrder(id)
+    return orderOperationManager.deleteOrder(id)
         .then(ServerResponse.noContent().build())
         .onErrorResume(error -> {
           log.error("Delete failed for order with id {}: {}", id, error.getMessage());

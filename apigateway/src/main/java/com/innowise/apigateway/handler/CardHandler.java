@@ -1,11 +1,10 @@
-package com.innowise.apigateway.controller;
+package com.innowise.apigateway.handler;
 
 import com.innowise.apigateway.dto.card.CreateCardRequest;
 import com.innowise.apigateway.dto.card.UpdateCardRequest;
-import com.innowise.apigateway.service.CardService;
+import com.innowise.apigateway.manager.CardOperationManager;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -17,18 +16,18 @@ import reactor.core.publisher.Mono;
  */
 @Slf4j
 @Component
-public class CardController {
+public class CardHandler {
 
-  private final CardService cardService;
+  private final CardOperationManager cardOperationManager;
 
-  public CardController(CardService cardService) {
-    this.cardService = cardService;
+  public CardHandler(CardOperationManager cardOperationManager) {
+    this.cardOperationManager = cardOperationManager;
   }
 
   public Mono<ServerResponse> getCardById(ServerRequest request) {
     Long id = Long.valueOf(request.pathVariable("id"));
 
-    return cardService.getCardById(id)
+    return cardOperationManager.getCardById(id)
         .flatMap(card -> ServerResponse.ok().bodyValue(card))
         .onErrorResume(error -> {
           log.error("Get card with id {} failed", id, error.getMessage());
@@ -39,7 +38,7 @@ public class CardController {
   public Mono<ServerResponse> getCardByUserId(ServerRequest request) {
     String id = request.pathVariable("id");
 
-    return cardService.getCardByUserId(id)
+    return cardOperationManager.getCardByUserId(id)
         .flatMap(cards -> ServerResponse.ok().bodyValue(cards))
         .onErrorResume(error -> {
           log.error("Get card with user id {} failed", id, error.getMessage());
@@ -61,7 +60,7 @@ public class CardController {
           .map(Long::valueOf)
           .toList();
 
-      return cardService.getCardsByIds(ids)
+      return cardOperationManager.getCardsByIds(ids)
           .flatMap(cards -> {
             if (cards.isEmpty()) {
               return ServerResponse.noContent().build();
@@ -83,7 +82,7 @@ public class CardController {
     Long id = Long.valueOf(request.pathVariable("id"));
 
     return request.bodyToMono(UpdateCardRequest.class)
-        .flatMap(updateRequest -> cardService.updateCard(id, updateRequest))
+        .flatMap(updateRequest -> cardOperationManager.updateCard(id, updateRequest))
         .flatMap(card -> ServerResponse.ok().bodyValue(card))
         .onErrorResume(error -> {
           log.error("Card was not updated with id {}", id, error);
@@ -96,7 +95,7 @@ public class CardController {
         .orElseThrow(() -> new IllegalArgumentException("UserId parameter is required"));
 
     return request.bodyToMono(CreateCardRequest.class)
-        .flatMap(createRequest -> cardService.createCard(userId, createRequest))
+        .flatMap(createRequest -> cardOperationManager.createCard(userId, createRequest))
         .flatMap(card -> ServerResponse.ok().bodyValue(card))
         .onErrorResume(error -> {
           log.error("Creation card failed for user with id {}: {}", userId, error.getMessage());
@@ -107,7 +106,7 @@ public class CardController {
   public Mono<ServerResponse> deleteCard(ServerRequest request) {
     Long id = Long.valueOf(request.pathVariable("id"));
 
-    return cardService.deleteCard(id)
+    return cardOperationManager.deleteCard(id)
         .then(ServerResponse.noContent().build())
         .onErrorResume(error -> {
           log.error("Delete failed for card with id {}: {}", id, error.getMessage());
