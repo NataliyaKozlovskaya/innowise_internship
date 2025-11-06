@@ -2,10 +2,13 @@ package com.innowise.user.controller;
 
 import com.innowise.user.dto.user.CreateUserRequest;
 import com.innowise.user.dto.user.UpdateUserRequest;
+import com.innowise.user.dto.user.UserCreateResponse;
 import com.innowise.user.dto.user.UserDTO;
+import com.innowise.user.dto.user.UserWithCardDTO;
 import com.innowise.user.service.UserService;
 import jakarta.validation.Valid;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  * REST Controller for managing user operations. Provides endpoints for user CRUD operations and
  * card management
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/users")
 @Validated
@@ -37,9 +41,10 @@ public class UserController {
   /**
    * Create a new user
    */
-  @PostMapping
-  public ResponseEntity<UserDTO> createUser(@RequestBody @Valid CreateUserRequest request) {
-    UserDTO createdUser = userService.createUser(request);
+  @PostMapping("/register")
+  public ResponseEntity<UserCreateResponse> createUser(
+      @RequestBody @Valid CreateUserRequest request) {
+    UserCreateResponse createdUser = userService.createUser(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
   }
 
@@ -65,7 +70,8 @@ public class UserController {
    * Get user by email address
    */
   @GetMapping("/email")
-  public ResponseEntity<UserDTO> getUserByEmail(@Valid @RequestParam(name = "email") String email) {
+  public ResponseEntity<UserDTO> getUserByEmail(
+      @Valid @RequestParam(name = "email") String email) {
     UserDTO response = userService.getUserByEmail(email);
     return ResponseEntity.ok(response);
   }
@@ -85,7 +91,16 @@ public class UserController {
    * Delete user by ID
    */
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+  public ResponseEntity<UserWithCardDTO> deleteUser(@PathVariable String id) {
+    UserWithCardDTO response = userService.deleteUser(id);
+    return ResponseEntity.ok(response);
+  }
+
+  /**
+   * Internal delete user by ID
+   */
+  @DeleteMapping("/internal/{id}")
+  public ResponseEntity<Void> internalDeleteUser(@PathVariable String id) {
     userService.deleteUser(id);
     return ResponseEntity.noContent().build();
   }

@@ -65,6 +65,15 @@ public class OrderServiceImpl implements OrderService {
 
   @Transactional(readOnly = true)
   @Override
+  public List<OrderDTO> getOrdersByUserId(String userId) {
+    return orderRepository.findAllByUserId(userId)
+        .stream()
+        .map(orderMapper::toOrderDTO)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  @Override
   public List<OrderDTO> getOrdersByIds(List<Long> ids) {
     List<Order> orders = orderRepository.findByIdIn(ids);
     return orders.stream()
@@ -99,6 +108,12 @@ public class OrderServiceImpl implements OrderService {
       throw new OrderNotFoundException(ORDER_NOT_FOUND + id);
     }
     orderRepository.deleteById(id);
+  }
+
+  @Override
+  @Transactional
+  public void deleteOrderByUserId(String id) {
+    orderRepository.deleteByUserId(id);
   }
 
   /**

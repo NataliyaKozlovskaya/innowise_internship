@@ -18,7 +18,6 @@ import lombok.Setter;
 /**
  * An entity, that provides information about the user
  */
-
 @Getter
 @Setter
 @AllArgsConstructor

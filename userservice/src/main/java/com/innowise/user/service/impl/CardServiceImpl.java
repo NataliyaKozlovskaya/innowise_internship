@@ -13,10 +13,11 @@ import com.innowise.user.service.UserService;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
+@Slf4j
 @Service
 @AllArgsConstructor
 @Transactional
@@ -32,10 +33,12 @@ public class CardServiceImpl implements CardService {
   public CardDTO createCard(String userId, CreateCardRequest request) {
     User user = userService.getUserEntityById(userId);
 
+    LocalDate expirationDate = LocalDate.parse(request.expirationDate().toString());
+
     Card card = new Card();
     card.setNumber(request.number());
     card.setHolder(request.holder());
-    card.setExpirationDate(LocalDate.now().plusYears(4));
+    card.setExpirationDate(expirationDate);
     card.setUser(user);
     cardInfoRepository.save(card);
 
@@ -52,8 +55,18 @@ public class CardServiceImpl implements CardService {
 
   @Transactional(readOnly = true)
   @Override
+  public List<CardDTO> getCardByUserId(String id) {
+    return cardInfoRepository.findAllByUserUuid(id)
+        .stream()
+        .map(cardMapper::toCardDTO)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  @Override
   public List<CardDTO> getCardsByIds(List<Long> ids) {
-    List<CardDTO> result = cardInfoRepository.findByIdIn(ids).stream()
+    List<CardDTO> result = cardInfoRepository.findByIdIn(ids)
+        .stream()
         .map(cardMapper::toCardDTO)
         .toList();
 

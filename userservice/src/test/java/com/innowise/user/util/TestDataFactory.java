@@ -3,6 +3,7 @@ package com.innowise.user.util;
 import com.innowise.user.dto.card.CardDTO;
 import com.innowise.user.dto.card.CreateCardRequest;
 import com.innowise.user.dto.user.CreateUserRequest;
+import com.innowise.user.dto.user.UserCreateResponse;
 import com.innowise.user.dto.user.UserDTO;
 import com.innowise.user.entity.Card;
 import com.innowise.user.entity.User;
@@ -23,8 +24,14 @@ public final class TestDataFactory {
     return new CreateUserRequest(uuid, name, surname, date, email);
   }
 
-  public static UserDTO getUserDTO(String name, String surname, LocalDate date, String email) {
-    return new UserDTO(surname, name, date, email);
+  public static UserDTO getUserDTO(String uuid, String name, String surname, LocalDate date,
+      String email) {
+    return new UserDTO(name, surname, date, email);
+  }
+
+  public static UserCreateResponse getUserCreateResponse(String uuid, String name, String surname,
+      LocalDate date, String email) {
+    return new UserCreateResponse(uuid, name, surname, date, email);
   }
 
   public static User getUser(UUID uuid, String name, String surname, LocalDate date, String email) {

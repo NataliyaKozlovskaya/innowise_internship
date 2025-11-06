@@ -55,7 +55,7 @@
       <artifactId>spring-cloud-context</artifactId>
     </dependency>
 
-    <!-- Spring Cloud Starter Bootstrap (если используете) -->
+    <!-- Spring Cloud Starter Bootstrap -->
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-starter-bootstrap</artifactId>
@@ -128,12 +128,6 @@
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
       <scope>test</scope>
-    </dependency>
-
-    <!-- Spring Security -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 
     <!-- JWT -->

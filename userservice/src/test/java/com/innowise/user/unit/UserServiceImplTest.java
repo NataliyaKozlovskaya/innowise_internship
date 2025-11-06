@@ -12,15 +12,20 @@ import static org.mockito.Mockito.when;
 
 import com.innowise.user.dto.user.CreateUserRequest;
 import com.innowise.user.dto.user.UpdateUserRequest;
+import com.innowise.user.dto.user.UserCreateResponse;
 import com.innowise.user.dto.user.UserDTO;
+import com.innowise.user.entity.Card;
 import com.innowise.user.entity.User;
 import com.innowise.user.exception.EmailAlreadyExistsException;
 import com.innowise.user.exception.UserNotFoundException;
+import com.innowise.user.mapper.CardMapper;
 import com.innowise.user.mapper.UserMapper;
+import com.innowise.user.repository.CardRepository;
 import com.innowise.user.repository.UserRepository;
 import com.innowise.user.service.impl.UserServiceImpl;
 import com.innowise.user.util.TestDataFactory;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,7 +47,11 @@ class UserServiceImplTest {
   @Mock
   private UserRepository userRepository;
   @Mock
+  private CardRepository cardRepository;
+  @Mock
   private UserMapper userMapper;
+  @Mock
+  private CardMapper cardMapper;
   @InjectMocks
   private UserServiceImpl userService;
 
@@ -51,19 +60,20 @@ class UserServiceImplTest {
     CreateUserRequest request = TestDataFactory.getCreateUserRequest(USER_ID.toString(), NAME,
         SURNAME, BIRTH_DATE, EMAIL);
     User savedUser = TestDataFactory.getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
-    UserDTO expectedDTO = TestDataFactory.getUserDTO(NAME, SURNAME, BIRTH_DATE, EMAIL);
+    UserCreateResponse expectedDTO = TestDataFactory.getUserCreateResponse(USER_ID.toString(), NAME,
+        SURNAME, BIRTH_DATE, EMAIL);
 
     when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
     when(userRepository.save(any(User.class))).thenReturn(savedUser);
-    when(userMapper.toUserDTO(savedUser)).thenReturn(expectedDTO);
+    when(userMapper.toUserCreateResponse(savedUser)).thenReturn(expectedDTO);
 
-    UserDTO result = userService.createUser(request);
+    UserCreateResponse result = userService.createUser(request);
 
     assertNotNull(result);
     assertEquals(expectedDTO.email(), result.email());
     verify(userRepository).findByEmail(EMAIL);
     verify(userRepository).save(any(User.class));
-    verify(userMapper).toUserDTO(savedUser);
+    verify(userMapper).toUserCreateResponse(savedUser);
   }
 
   @Test
@@ -82,7 +92,8 @@ class UserServiceImplTest {
   @Test
   void getUserById_ShouldReturnUserDTO() {
     User user = TestDataFactory.getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
-    UserDTO expectedDTO = TestDataFactory.getUserDTO(NAME, SURNAME, BIRTH_DATE, EMAIL);
+    UserDTO expectedDTO = TestDataFactory.getUserDTO(USER_ID.toString(), NAME, SURNAME, BIRTH_DATE,
+        EMAIL);
 
     when(userRepository.findById("1")).thenReturn(Optional.of(user));
     when(userMapper.toUserDTO(user)).thenReturn(expectedDTO);
@@ -100,7 +111,7 @@ class UserServiceImplTest {
 
     assertThrows(UserNotFoundException.class, () -> userService.getUserById("1"));
     verify(userRepository).findById("1");
-    verify(userMapper, never()).toUserDTO(any());
+    verify(userMapper, never()).toUserCreateResponse(any());
   }
 
   @Test
@@ -111,8 +122,10 @@ class UserServiceImplTest {
     User user2 = TestDataFactory.getUser(USER_ID, "Petr", "Ilir", LocalDate.of(1996, 5, 10),
         "petr@example.com");
 
-    UserDTO dto1 = TestDataFactory.getUserDTO("Ivan", "Ivanov", BIRTH_DATE, "ivan@example.com");
-    UserDTO dto2 = TestDataFactory.getUserDTO("Petr", "Ilir", BIRTH_DATE, "petr@example.com");
+    UserDTO dto1 = TestDataFactory.getUserDTO(USER_ID.toString(), "Ivan", "Ivanov", BIRTH_DATE,
+        "ivan@example.com");
+    UserDTO dto2 = TestDataFactory.getUserDTO(USER_ID.toString(), "Petr", "Ilir", BIRTH_DATE,
+        "petr@example.com");
 
     when(userRepository.findByIdsIn(ids)).thenReturn(List.of(user1, user2));
     when(userMapper.toUserDTO(user1)).thenReturn(dto1);
@@ -134,14 +147,15 @@ class UserServiceImplTest {
 
     assertThrows(UserNotFoundException.class, () -> userService.getUsersByIds(ids));
     verify(userRepository).findByIdsIn(ids);
-    verify(userMapper, never()).toUserDTO(any());
+    verify(userMapper, never()).toUserCreateResponse(any());
   }
 
   @Test
   void getUserByEmail_ShouldReturnUserDTO() {
     User user = TestDataFactory.getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
 
-    UserDTO expectedDTO = TestDataFactory.getUserDTO(NAME, SURNAME, BIRTH_DATE, EMAIL);
+    UserDTO expectedDTO = TestDataFactory.getUserDTO(USER_ID.toString(), NAME, SURNAME, BIRTH_DATE,
+        EMAIL);
     when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
     when(userMapper.toUserDTO(user)).thenReturn(expectedDTO);
 
@@ -159,7 +173,7 @@ class UserServiceImplTest {
 
     assertThrows(UserNotFoundException.class, () -> userService.getUserByEmail(EMAIL));
     verify(userRepository).findByEmail(EMAIL);
-    verify(userMapper, never()).toUserDTO(any());
+    verify(userMapper, never()).toUserCreateResponse(any());
   }
 
   @Test
@@ -168,15 +182,15 @@ class UserServiceImplTest {
 
     User user = TestDataFactory.getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
 
-    when(userRepository.findById("1")).thenReturn(Optional.of(user));
+    when(userRepository.findById((String) any())).thenReturn(Optional.of(user));
 
     when(userRepository.save(any(User.class))).thenAnswer(
         invocation -> invocation.<User>getArgument(0));
 
     when(userMapper.toUserDTO(any(User.class))).thenAnswer(invocation -> {
       User userToMap = invocation.getArgument(0);
-      return new UserDTO(userToMap.getName(), userToMap.getSurname(),
-          userToMap.getBirthDate(), userToMap.getEmail());
+      return new UserDTO(userToMap.getName(), userToMap.getSurname(), userToMap.getBirthDate(),
+          userToMap.getEmail());
     });
 
     UserDTO result = userService.updateUser("1", request);
@@ -194,7 +208,8 @@ class UserServiceImplTest {
   void updateUser_ShouldEvictEmailCache_WhenEmailChanged() {
     UpdateUserRequest request = new UpdateUserRequest(null, null, "new@example.com");
     User existingUser = TestDataFactory.getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
-    UserDTO expectedDTO = TestDataFactory.getUserDTO("NewName", "NewSurname", BIRTH_DATE,
+    UserDTO expectedDTO = TestDataFactory.getUserDTO(USER_ID.toString(), "NewName", "NewSurname",
+        BIRTH_DATE,
         "new@example.com");
 
     when(userRepository.findById("1")).thenReturn(Optional.of(existingUser));
@@ -221,8 +236,9 @@ class UserServiceImplTest {
   @Test
   void deleteUser_ShouldDeleteUserSuccessfully() {
     User user = TestDataFactory.getUser(USER_ID, NAME, SURNAME, BIRTH_DATE, EMAIL);
-
+    List<Card> cardList = new ArrayList<>();
     when(userRepository.findById("1")).thenReturn(Optional.of(user));
+    when(cardRepository.findAllByUserUuid("1")).thenReturn(cardList);
     doNothing().when(userRepository).delete(user);
 
     userService.deleteUser("1");
