@@ -1,6 +1,6 @@
 package com.innowise.apigateway.filter;
 
-import com.innowise.apigateway.service.AuthService;
+import com.innowise.apigateway.manager.AuthOperationManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.HandlerFilterFunction;
@@ -16,10 +16,10 @@ import reactor.core.publisher.Mono;
 @Component
 public class JwtRouterFilter implements HandlerFilterFunction<ServerResponse, ServerResponse> {
 
-  private final AuthService authService;
+  private final AuthOperationManager authOperationManager;
 
-  public JwtRouterFilter(AuthService authService) {
-    this.authService = authService;
+  public JwtRouterFilter(AuthOperationManager authOperationManager) {
+    this.authOperationManager = authOperationManager;
   }
 
   @Override
@@ -38,7 +38,7 @@ public class JwtRouterFilter implements HandlerFilterFunction<ServerResponse, Se
           .bodyValue("Missing JWT token");
     }
 
-    return authService.validateToken(token)
+    return authOperationManager.validateToken(token)
         .flatMap(valid -> {
           if (valid.valid()) {
             return next.handle(request);
