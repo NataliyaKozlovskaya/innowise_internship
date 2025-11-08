@@ -33,7 +33,6 @@ public class Payment {
   @Field("user_id")
   private String userId;
 
-  @Indexed
   private PaymentStatus status;
 
   private LocalDateTime timestamp;

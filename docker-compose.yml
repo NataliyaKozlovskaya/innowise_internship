@@ -39,6 +39,23 @@ services:
       retries: 5
       start_period: 10s
 
+  # Mongo
+  mongodb:
+    image: mongo:7.0
+    container_name: mongo
+    restart: unless-stopped
+    environment:
+      MONGO_USERNAME: mongo
+      MONGO_PASSWORD: mongo
+      MONGO_DATABASE: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - innowise-network
+
+
   # User Service
   user-service:
     build:
@@ -121,6 +138,33 @@ services:
       timeout: 10s
       retries: 3
 
+  # Payment Service
+  payment-service:
+    build:
+      context: ./paymentservice
+      dockerfile: Dockerfile
+    container_name: payment-service
+    environment:
+      SERVER_PORT: 8066
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: mongodb://mongodb:27017/mongo
+      SPRING_DATASOURCE_USERNAME: mongo
+      SPRING_DATASOURCE_PASSWORD: mongo
+    depends_on:
+      user-service:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      order-service:
+        condition: service_healthy
+    networks:
+      - innowise-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8099/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # API Gateway
   api-gateway:
     build:
@@ -135,6 +179,7 @@ services:
       AUTH_SERVICE_URL: http://auth-service:8089
       USER_SERVICE_URL: http://user-service:8088
       ORDER_SERVICE_URL: http://order-service:8099
+      PAYMENT_SERVICE_URL: http://payment-service:8066
     ports:
       - "8093:8077"
     depends_on:
@@ -153,10 +198,10 @@ services:
       retries: 3
 
 
-
 volumes:
   postgres_data:
   redis_data:
+  mongo_data:
 
 networks:
   innowise-network:

@@ -10,6 +10,7 @@ import com.innowise.order.exception.ItemNotFoundException;
 import com.innowise.order.exception.OrderNotFoundException;
 import com.innowise.order.exception.UserNotFoundException;
 import com.innowise.order.exception.UserServiceUnavailableException;
+import com.innowise.order.kafka.OrderEventService;
 import com.innowise.order.mapper.OrderMapper;
 import com.innowise.order.repository.ItemRepository;
 import com.innowise.order.repository.OrderRepository;
@@ -32,14 +33,17 @@ public class OrderServiceImpl implements OrderService {
   private final ItemRepository itemRepository;
   private final OrderMapper orderMapper;
   private final OrderClientService userClientService;
+  private final OrderEventService orderEventService;
 
   public OrderServiceImpl(OrderRepository orderRepository, ItemRepository itemRepository,
-      OrderMapper orderMapper, OrderClientService userClientService
+      OrderMapper orderMapper, OrderClientService userClientService,
+      OrderEventService orderEventService
   ) {
     this.orderRepository = orderRepository;
     this.itemRepository = itemRepository;
     this.orderMapper = orderMapper;
     this.userClientService = userClientService;
+    this.orderEventService = orderEventService;
   }
 
   @Transactional
@@ -51,6 +55,13 @@ public class OrderServiceImpl implements OrderService {
 
     Order order = buildOrder(request.userId(), availableItems, itemQuantities);
     Order savedOrder = orderRepository.save(order);
+
+    // Отправляем событие в Kafka
+    orderEventService.sendOrderCreatedEvent(
+        savedOrder.getId().toString(),
+        savedOrder.getUserId(),
+        savedOrder.getAmount()// надо посчитать исходя из заказа TODO
+    );
 
     return orderMapper.toOrderDTO(savedOrder);
   }
@@ -100,6 +111,19 @@ public class OrderServiceImpl implements OrderService {
     Order updatedOrder = orderRepository.save(order);
     return orderMapper.toOrderDTO(updatedOrder);
   }
+
+  // В OrderService добавляем метод:// todo
+//  public void updateOrderStatus(String orderId, String paymentStatus) {
+//    Order order = orderRepository.findById(orderId)
+//        .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+//
+//    OrderStatus newStatus = "COMPLETED".equals(paymentStatus)
+//        ? OrderStatus.PAID
+//        : OrderStatus.PAYMENT_FAILED;
+//
+//    order.setStatus(newStatus);
+//    orderRepository.save(order);
+//  }
 
   @Override
   @Transactional

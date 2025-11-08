@@ -20,7 +20,6 @@ public class PaymentServiceImpl implements PaymentService {
   }
 
 
-  // CRUD операции
   public Payment createPayment(Payment payment) {
     if (payment.getTimestamp() == null) {
       payment.setTimestamp(LocalDateTime.now());
@@ -28,7 +27,6 @@ public class PaymentServiceImpl implements PaymentService {
     return paymentRepository.save(payment);
   }
 
-  // Специфичные операции
   public List<Payment> getPaymentsByOrderId(String orderId) {
     return paymentRepository.findByOrderId(orderId);
   }

@@ -5,6 +5,12 @@ spring:
   application:
     name: order-service
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
+      group-id: orders-group
+
   liquibase:
     enabled: false
     default-schema: order_schema
@@ -27,6 +33,12 @@ spring:
         default_schema: order_schema
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+kafka:
+  topics:
+    order-created: order-created                    # Order Service отправляет
+    order-payment-processed: order-payment-processed # Order Service получает
+    payment-failed: payment-failed                   # Order Service получает
 
 service:
   user:

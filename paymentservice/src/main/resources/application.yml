@@ -5,26 +5,32 @@ spring:
   application:
     name: payment-service
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: payments-group
+      auto-offset-reset: earliest
+
   data:
     mongodb:
-      uri: mongodb://localhost:27017/paymentdb
+      uri: mongodb://mongodb:27017/mongo
       auto-index-creation: true
-  
 
-  jpa:
-    hibernate:
-      ddl-auto: create
-    show-sql: true
-    properties:
-      hibernate:
-        default_schema: payment_schema
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    enabled: true
 
-#service:
-#  user:
-#    url: http://user-service:8088
-#    methodGetUserById: /api/v1/users/
+
+kafka:
+  topics:
+    order-created: order-created # Payments Service получает
+    order-payment-processed: order-payment-processed # Payments Service отправляет
+    payment-failed: payment-failed # Payments Service отправляет
+
+external:
+  payment:
+    service:
+      url: https://randomnumberapi.com/api/v1.0/random?min=1&max=1000
 
 management:
   endpoints:
@@ -34,3 +40,8 @@ management:
   health:
     redis:
       enabled: false
+
+#service:
+#  user:
+#    url: http://user-service:8088
+#    methodGetUserById: /api/v1/users/

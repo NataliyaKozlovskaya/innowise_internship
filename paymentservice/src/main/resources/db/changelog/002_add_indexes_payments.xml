@@ -8,7 +8,19 @@
         http://www.liquibase.org/xml/ns/dbchangelog-ext
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <include file="001_create_payments_collection.xml" relativeToChangelogFile="true"/>
-  <include file="002_add_indexes_payments.xml" relativeToChangelogFile="true"/>
+  <changeSet id="002_add_indexes_payments" author="NAKozlovskaya">
+    <ext:createIndex collectionName="payments" indexName="idx_order_id">
+      <ext:keys>
+        { "order_id": 1 }
+      </ext:keys>
+    </ext:createIndex>
+
+    <ext:createIndex collectionName="payments" indexName="idx_user_id">
+      <ext:keys>
+        { "user_id": 1 }
+      </ext:keys>
+    </ext:createIndex>
+
+  </changeSet>
 
 </databaseChangeLog>
