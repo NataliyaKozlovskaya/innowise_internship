@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "external.payment.service")
-  public class ExternalServiceProperties {
+public class ExternalServiceProperties {
 
-    private String externalServiceUrl;
-  }
+  private String url;
+}

@@ -6,13 +6,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- *
+ * Order Created Event for integration between microservices via Kafka
  */
 @Getter
 @Setter
 public class OrderCreatedEvent {
 
-  private String orderId;
+  private Long orderId;
   private String userId;
   private BigDecimal amount;
   private LocalDateTime createdAt;

@@ -26,7 +26,6 @@ public class PaymentController {
     this.paymentService = paymentService;
   }
 
-  // CREATE
   @PostMapping
   public ResponseEntity<Payment> createPayment(@RequestBody Payment payment) {
     Payment created = paymentService.createPayment(payment);
@@ -50,10 +49,10 @@ public class PaymentController {
 
   @GetMapping("/total")
   public ResponseEntity<BigDecimal> getTotalPaymentsForPeriod(
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+      @RequestParam LocalDateTime start,
+      @RequestParam LocalDateTime end) {
 
-    BigDecimal total = paymentService.getTotalPaymentsForPeriod(start, end);
+    BigDecimal total = paymentService.getTotalSumForPeriod(start, end);
     return ResponseEntity.ok(total);
   }
 }

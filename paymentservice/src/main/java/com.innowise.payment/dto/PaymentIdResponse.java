@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- *
+ * Response object containing payment identification and status information
  */
 @Getter
 @Setter

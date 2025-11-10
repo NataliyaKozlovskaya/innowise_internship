@@ -1,7 +1,7 @@
-package com.innowise.payment.config;
+package com.innowise.order.config;
 
-import com.innowise.payment.dto.kafka.OrderCreatedEvent;
-import com.innowise.payment.properties.KafkaProperties;
+import com.innowise.order.dto.kafka.PaymentProcessedEvent;
+import com.innowise.order.properties.KafkaProperties;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.admin.AdminClientConfig;
@@ -10,6 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -26,9 +27,11 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
  * Configuration class for kafka
  */
 @Configuration
+@EnableConfigurationProperties(KafkaProperties.class)
 public class KafkaConfig {
 
   private final KafkaProperties kafkaProperties;
+
 
   public KafkaConfig(KafkaProperties kafkaProperties) {
     this.kafkaProperties = kafkaProperties;
@@ -77,7 +80,7 @@ public class KafkaConfig {
   @Bean
   public ProducerFactory<String, Object> producerFactory() {
     Map<String, Object> configProps = new HashMap<>();
-    configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
+    configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, getBootstrapServers());
     configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
     configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
     configProps.put(ProducerConfig.ACKS_CONFIG, "all");
@@ -90,7 +93,7 @@ public class KafkaConfig {
   }
 
   @Bean
-  public ConsumerFactory<String, OrderCreatedEvent> consumerFactory() {
+  public ConsumerFactory<String, PaymentProcessedEvent> paymentProcessedConsumerFactory() {
     Map<String, Object> configProps = new HashMap<>();
     configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, getBootstrapServers());
     configProps.put(ConsumerConfig.GROUP_ID_CONFIG, getConsumerGroupId());
@@ -102,14 +105,15 @@ public class KafkaConfig {
 
     return new DefaultKafkaConsumerFactory<>(configProps,
         new StringDeserializer(),
-        new JsonDeserializer<>(OrderCreatedEvent.class));
+        new JsonDeserializer<>(PaymentProcessedEvent.class));
   }
 
   @Bean
-  public ConcurrentKafkaListenerContainerFactory<String, OrderCreatedEvent> kafkaListenerContainerFactory() {
-    ConcurrentKafkaListenerContainerFactory<String, OrderCreatedEvent> factory =
+  public ConcurrentKafkaListenerContainerFactory<String, PaymentProcessedEvent>
+  paymentProcessedKafkaListenerContainerFactory() {
+    ConcurrentKafkaListenerContainerFactory<String, PaymentProcessedEvent> factory =
         new ConcurrentKafkaListenerContainerFactory<>();
-    factory.setConsumerFactory(consumerFactory());
+    factory.setConsumerFactory(paymentProcessedConsumerFactory());
     return factory;
   }
 
@@ -122,6 +126,6 @@ public class KafkaConfig {
   private String getConsumerGroupId() {
     return kafkaProperties != null && kafkaProperties.getConsumerGroupId() != null
         ? kafkaProperties.getConsumerGroupId()
-        : "payment-service-group";
+        : "order-service-group";
   }
 }

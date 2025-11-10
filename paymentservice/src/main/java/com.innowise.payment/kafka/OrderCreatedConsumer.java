@@ -6,7 +6,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 /**
- *
+ * Kafka consumer component for handling Order Created events
  */
 @Slf4j
 @Component
@@ -30,7 +30,6 @@ public class OrderCreatedConsumer {
 
     } catch (Exception e) {
       log.error("Failed to process order created event: orderId={}", event.getOrderId(), e);
-      //  retry logic OR dead letter queue
     }
   }
 }

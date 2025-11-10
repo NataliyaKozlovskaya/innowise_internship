@@ -1,15 +1,18 @@
-package com.innowise.order;
+package com.innowise.payment;
 
-import com.innowise.order.rest.UserServiceProperties;
+import com.innowise.payment.properties.ExternalServiceProperties;
+import com.innowise.payment.properties.KafkaProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.retry.annotation.EnableRetry;
 
 @SpringBootApplication
-@EnableConfigurationProperties(UserServiceProperties.class)
-public class OrderServiceApplication {
+@EnableRetry
+@EnableConfigurationProperties({ExternalServiceProperties.class, KafkaProperties.class})
+public class PaymentServiceApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(OrderServiceApplication.class, args);
+    SpringApplication.run(PaymentServiceApplication.class, args);
   }
 }

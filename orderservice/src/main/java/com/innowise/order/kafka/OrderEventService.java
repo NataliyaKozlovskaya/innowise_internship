@@ -4,9 +4,11 @@ package com.innowise.order.kafka;
 import com.innowise.order.dto.kafka.OrderCreatedEvent;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class OrderEventService {
 
@@ -17,8 +19,11 @@ public class OrderEventService {
     this.kafkaTemplate = kafkaTemplate;
   }
 
-  public void sendOrderCreatedEvent(String orderId, String userId, BigDecimal amount, LocalDateTime createdAt) {
+  public void sendOrderCreatedEvent(Long orderId, String userId, BigDecimal amount,
+      LocalDateTime createdAt) {
     OrderCreatedEvent event = new OrderCreatedEvent(orderId, userId, amount, createdAt);
-    kafkaTemplate.send(ORDER_CREATED_TOPIC, orderId, event);
+
+    log.info("Send event ORDER_CREATED_event to paymentService with orderId : ", orderId);
+    kafkaTemplate.send(ORDER_CREATED_TOPIC, String.valueOf(orderId), event);
   }
 }

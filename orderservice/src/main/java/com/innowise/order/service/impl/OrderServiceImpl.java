@@ -16,6 +16,8 @@ import com.innowise.order.repository.ItemRepository;
 import com.innowise.order.repository.OrderRepository;
 import com.innowise.order.rest.OrderClientService;
 import com.innowise.order.service.OrderService;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -56,11 +58,11 @@ public class OrderServiceImpl implements OrderService {
     Order order = buildOrder(request.userId(), availableItems, itemQuantities);
     Order savedOrder = orderRepository.save(order);
 
-    // Отправляем событие в Kafka
     orderEventService.sendOrderCreatedEvent(
-        savedOrder.getId().toString(),
+        savedOrder.getId(),
         savedOrder.getUserId(),
-        savedOrder.getAmount()// надо посчитать исходя из заказа TODO
+        getAmount(availableItems, itemQuantities),
+        LocalDateTime.now()
     );
 
     return orderMapper.toOrderDTO(savedOrder);
@@ -112,18 +114,18 @@ public class OrderServiceImpl implements OrderService {
     return orderMapper.toOrderDTO(updatedOrder);
   }
 
-  // В OrderService добавляем метод:// todo
-//  public void updateOrderStatus(String orderId, String paymentStatus) {
-//    Order order = orderRepository.findById(orderId)
-//        .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
-//
-//    OrderStatus newStatus = "COMPLETED".equals(paymentStatus)
-//        ? OrderStatus.PAID
-//        : OrderStatus.PAYMENT_FAILED;
-//
-//    order.setStatus(newStatus);
-//    orderRepository.save(order);
-//  }
+  @Override
+  public void updateOrderStatus(Long orderId, String paymentStatus) {
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+
+    OrderStatus newStatus = "COMPLETED".equals(paymentStatus)
+        ? OrderStatus.COMPLETED
+        : OrderStatus.PAYMENT_FAILED;
+
+    order.setStatus(newStatus);
+    orderRepository.save(order);
+  }
 
   @Override
   @Transactional
@@ -220,5 +222,45 @@ public class OrderServiceImpl implements OrderService {
     });
 
     return order;
+  }
+
+  private BigDecimal getAmount(Map<Long, Item> availableItems, Map<Long, Integer> itemQuantities) {
+    BigDecimal totalAmount = BigDecimal.ZERO;
+
+    for (Map.Entry<Long, Integer> entry : itemQuantities.entrySet()) {
+      Long itemId = entry.getKey();
+      Integer quantity = entry.getValue();
+
+      Item item = checkItem(availableItems, itemId);
+      checkQuantity(quantity, itemId);
+      BigDecimal itemPrice = checkPrice(item, itemId);
+
+      BigDecimal itemTotal = itemPrice.multiply(BigDecimal.valueOf(quantity));
+      totalAmount = totalAmount.add(itemTotal);
+    }
+
+    return totalAmount;
+  }
+
+  private static BigDecimal checkPrice(Item item, Long itemId) {
+    BigDecimal itemPrice = item.getPrice();
+    if (itemPrice == null || itemPrice.compareTo(BigDecimal.ZERO) < 0) {
+      throw new IllegalArgumentException("Invalid price for item id: " + itemId);
+    }
+    return itemPrice;
+  }
+
+  private static void checkQuantity(Integer quantity, Long itemId) {
+    if (quantity <= 0) {
+      throw new IllegalArgumentException("Invalid quantity for item id: " + itemId);
+    }
+  }
+
+  private Item checkItem(Map<Long, Item> availableItems, Long itemId) {
+    Item item = availableItems.get(itemId);
+    if (item == null) {
+      throw new IllegalArgumentException("Item not found with id: " + itemId);
+    }
+    return item;
   }
 }

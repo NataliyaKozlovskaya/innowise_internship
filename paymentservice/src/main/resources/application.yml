@@ -1,36 +1,37 @@
 server:
-  port: 8066
+  port: ${SERVER_PORT:8066}
 
 spring:
   application:
     name: payment-service
 
+  retry:
+    enabled: true
+
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
     consumer:
-      group-id: payments-group
+      group-id: payment-service
       auto-offset-reset: earliest
+    topics:
+      order-created: order-created
+      order-payment-processed: order-payment-processed
+      payment-failed: payment-failed
 
   data:
     mongodb:
-      uri: mongodb://mongodb:27017/mongo
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://mongodb:27017/payment_db}
+      database: ${SPRING_DATA_MONGODB_DATABASE:payment_db}
       auto-index-creation: true
 
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
     enabled: true
 
-
-kafka:
-  topics:
-    order-created: order-created # Payments Service получает
-    order-payment-processed: order-payment-processed # Payments Service отправляет
-    payment-failed: payment-failed # Payments Service отправляет
-
 external:
   payment:
     service:
-      url: https://randomnumberapi.com/api/v1.0/random?min=1&max=1000
+      url: https://www.random.org/integers/?num=1&min=1&max=1000&col=1&base=10&format=plain&rnd=new
 
 management:
   endpoints:
@@ -40,8 +41,3 @@ management:
   health:
     redis:
       enabled: false
-
-#service:
-#  user:
-#    url: http://user-service:8088
-#    methodGetUserById: /api/v1/users/

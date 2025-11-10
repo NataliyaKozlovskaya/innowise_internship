@@ -39,7 +39,6 @@ public class PaymentServiceImpl implements PaymentService {
     return paymentRepository.findByStatus(status);
   }
 
-
   // Get total sum of payments for date period
   public BigDecimal getTotalSumForPeriod(LocalDateTime startDate, LocalDateTime endDate) {
     List<Payment> payments = paymentRepository.findCompletedPaymentsInPeriod(startDate, endDate);
@@ -47,5 +46,14 @@ public class PaymentServiceImpl implements PaymentService {
     return payments.stream()
         .map(Payment::getPaymentAmount)
         .reduce(BigDecimal.ZERO, BigDecimal::add);
+  }
+
+  public Payment updatePayment(String id, PaymentStatus status){
+    Payment payment = paymentRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Payment with id " + id + " was not found"));
+
+    payment.setStatus(status);
+    paymentRepository.save(payment);
+    return payment;
   }
 }

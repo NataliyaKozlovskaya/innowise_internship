@@ -51,4 +51,13 @@ public interface PaymentService {
    * @return
    */
   BigDecimal getTotalSumForPeriod(LocalDateTime startDate, LocalDateTime endDate);
+
+  /**
+   * Update order status by payment ID
+   *
+   * @param id     payment id
+   * @param status payment status
+   * @return Payment
+   */
+  Payment updatePayment(String id, PaymentStatus status);
 }

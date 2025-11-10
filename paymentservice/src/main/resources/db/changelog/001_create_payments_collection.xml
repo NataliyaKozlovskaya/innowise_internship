@@ -17,7 +17,7 @@
         "required": ["order_id", "user_id", "status", "timestamp", "payment_amount"],
         "properties": {
         "order_id": {
-        "bsonType": "string",
+        "bsonType": "long",
         "description": "Must be a string and is required"
         },
         "user_id": {
