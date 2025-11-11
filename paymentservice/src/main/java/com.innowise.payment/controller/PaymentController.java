@@ -1,12 +1,12 @@
 package com.innowise.payment.controller;
 
+import com.innowise.payment.dto.PaymentDTO;
 import com.innowise.payment.entity.Payment;
 import com.innowise.payment.enums.PaymentStatus;
 import com.innowise.payment.service.PaymentServiceImpl;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,25 +26,23 @@ public class PaymentController {
     this.paymentService = paymentService;
   }
 
-  @PostMapping
-  public ResponseEntity<Payment> createPayment(@RequestBody Payment payment) {
-    Payment created = paymentService.createPayment(payment);
-    return ResponseEntity.ok(created);
-  }
-
   @GetMapping("/order/{orderId}")
-  public ResponseEntity<List<Payment>> getPaymentsByOrderId(@PathVariable String orderId) {
-    return ResponseEntity.ok(paymentService.getPaymentsByOrderId(orderId));
+  public ResponseEntity<List<PaymentDTO>> getPaymentsByOrderId(@PathVariable Long orderId) {
+    List<PaymentDTO> response = paymentService.getPaymentsByOrderId(orderId);
+    return ResponseEntity.ok(response);
   }
 
   @GetMapping("/user/{userId}")
-  public ResponseEntity<List<Payment>> getPaymentsByUserId(@PathVariable String userId) {
-    return ResponseEntity.ok(paymentService.getPaymentsByUserId(userId));
+  public ResponseEntity<List<PaymentDTO>> getPaymentsByUserId(@PathVariable String userId) {
+    List<PaymentDTO> response = paymentService.getPaymentsByUserId(userId);
+    return ResponseEntity.ok(response);
   }
 
-  @GetMapping("/status/{status}")
-  public ResponseEntity<List<Payment>> getPaymentsByStatus(@PathVariable PaymentStatus status) {
-    return ResponseEntity.ok(paymentService.getPaymentsByStatus(status));
+  @GetMapping("/status")
+  public ResponseEntity<List<PaymentDTO>> getPaymentsByStatuses(
+      @RequestParam List<PaymentStatus> statuses) {
+    List<PaymentDTO> response = paymentService.getPaymentsByStatuses(statuses);
+    return ResponseEntity.ok(response);
   }
 
   @GetMapping("/total")

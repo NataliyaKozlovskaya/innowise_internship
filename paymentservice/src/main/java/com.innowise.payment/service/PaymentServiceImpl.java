@@ -1,59 +1,88 @@
 package com.innowise.payment.service;
 
-import com.innowise.payment.enums.PaymentStatus;
+import com.innowise.payment.dto.PaymentDTO;
 import com.innowise.payment.entity.Payment;
+import com.innowise.payment.enums.PaymentStatus;
+import com.innowise.payment.exception.PaymentNotFoundException;
+import com.innowise.payment.mapper.PaymentMapper;
 import com.innowise.payment.repository.PaymentRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
-//@Transactional
 public class PaymentServiceImpl implements PaymentService {
 
   private final PaymentRepository paymentRepository;
+  private final PaymentMapper paymentMapper;
 
 
-  public PaymentServiceImpl(PaymentRepository paymentRepository) {
+  public PaymentServiceImpl(PaymentRepository paymentRepository, PaymentMapper paymentMapper) {
     this.paymentRepository = paymentRepository;
+    this.paymentMapper = paymentMapper;
   }
 
-
+  @Override
+  @Transactional
   public Payment createPayment(Payment payment) {
-    if (payment.getTimestamp() == null) {
-      payment.setTimestamp(LocalDateTime.now());
-    }
     return paymentRepository.save(payment);
   }
 
-  public List<Payment> getPaymentsByOrderId(String orderId) {
-    return paymentRepository.findByOrderId(orderId);
+  @Override
+  @Transactional(readOnly = true)
+  public List<PaymentDTO> getPaymentsByUserId(String userId) {
+    return paymentRepository.findByUserId(userId)
+        .stream()
+        .map(paymentMapper::toPaymentDTO)
+        .toList();
   }
 
-  public List<Payment> getPaymentsByUserId(String userId) {
-    return paymentRepository.findByUserId(userId);
+  @Override
+  @Transactional(readOnly = true)
+  public List<PaymentDTO> getPaymentsByOrderId(Long orderId) {
+    return paymentRepository.findByOrderId(orderId)
+        .stream()
+        .map(paymentMapper::toPaymentDTO)
+        .toList();
   }
 
-  public List<Payment> getPaymentsByStatus(PaymentStatus status) {
-    return paymentRepository.findByStatus(status);
+  @Override
+  @Transactional(readOnly = true)
+  public List<PaymentDTO> getPaymentsByStatuses(List<PaymentStatus> statuses) {
+    return paymentRepository.findByStatusIn(statuses)
+        .stream()
+        .map(paymentMapper::toPaymentDTO)
+        .toList();
   }
 
-  // Get total sum of payments for date period
+  @Override
+  @Transactional(readOnly = true)
   public BigDecimal getTotalSumForPeriod(LocalDateTime startDate, LocalDateTime endDate) {
     List<Payment> payments = paymentRepository.findCompletedPaymentsInPeriod(startDate, endDate);
 
+    if (payments.isEmpty()) {
+      log.error("Payments were not found for this period: {}, {}", startDate, endDate);
+      return BigDecimal.ZERO;
+    }
     return payments.stream()
         .map(Payment::getPaymentAmount)
         .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
-  public Payment updatePayment(String id, PaymentStatus status){
+  @Override
+  @Transactional
+  public PaymentDTO updatePayment(String id, PaymentStatus status) {
     Payment payment = paymentRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Payment with id " + id + " was not found"));
+        .orElseThrow(
+            () -> new PaymentNotFoundException("Payment with id " + id + " was not found"));
 
     payment.setStatus(status);
     paymentRepository.save(payment);
-    return payment;
+    return paymentMapper.toPaymentDTO(payment);
   }
 }

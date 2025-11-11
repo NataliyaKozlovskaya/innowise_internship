@@ -3,6 +3,7 @@ package com.innowise.payment.kafka;
 
 import static com.innowise.payment.enums.PaymentStatus.FAILED;
 
+import com.innowise.payment.dto.PaymentDTO;
 import com.innowise.payment.dto.PaymentIdResponse;
 import com.innowise.payment.dto.kafka.OrderCreatedEvent;
 import com.innowise.payment.dto.kafka.PaymentProcessedEvent;
@@ -51,7 +52,7 @@ public class PaymentProcessingService {
       PaymentStatus paymentStatus = paymentResponse.getStatus();
 
       log.info("Start updating order status in payment service");
-      Payment updatedPayment = paymentService.updatePayment(payment.getId(), paymentStatus);// todo
+      paymentService.updatePayment(payment.getId(), paymentStatus);
 
       sendPaymentProcessedEvent(event.getOrderId(), payment.getId(), paymentStatus);
       log.info("Sending an event to Kafka");

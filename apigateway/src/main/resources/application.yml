@@ -19,6 +19,7 @@ app:
     auth-service-url: http://auth-service:8089
     card-service-url: http://user-service:8088
     order-service-url: http://order-service:8099
+    payment-service-url: http://payment-service:8066
 
 server:
   port: 8077

@@ -1,5 +1,6 @@
 package com.innowise.payment.service;
 
+import com.innowise.payment.dto.PaymentDTO;
 import com.innowise.payment.entity.Payment;
 import com.innowise.payment.enums.PaymentStatus;
 import java.math.BigDecimal;
@@ -14,41 +15,41 @@ public interface PaymentService {
   /**
    * Creates and saves a new payment in the database
    *
-   * @param payment
-   * @return
+   * @param payment new payment
+   * @return Payment
    */
   Payment createPayment(Payment payment);
 
   /**
-   * Retrieves all payments associated with the specified order ID
+   * Finds all payments associated with the specified order ID
    *
-   * @param orderId
-   * @return
+   * @param orderId order id
+   * @return list of PaymentDTO
    */
-  List<Payment> getPaymentsByOrderId(String orderId);
+  List<PaymentDTO> getPaymentsByOrderId(Long orderId);
 
   /**
-   * Retrieves all payments associated with the specified user ID
+   * Finds all payments associated with the specified user ID
    *
-   * @param userId
-   * @return
+   * @param userId user id
+   * @return list of Payment
    */
-  List<Payment> getPaymentsByUserId(String userId);
+  List<PaymentDTO> getPaymentsByUserId(String userId);
 
   /**
-   * Retrieves all payments with the specified status
+   * Finds all payments with the specified statuses
    *
-   * @param status
-   * @return
+   * @param statuses payment statuses
+   * @return list of Payment
    */
-  List<Payment> getPaymentsByStatus(PaymentStatus status);
+  List<PaymentDTO> getPaymentsByStatuses(List<PaymentStatus> statuses);
 
   /**
    * Calculates the total sum of all payments within the specified date period
    *
-   * @param startDate
-   * @param endDate
-   * @return
+   * @param startDate start date
+   * @param endDate   end date
+   * @return sum
    */
   BigDecimal getTotalSumForPeriod(LocalDateTime startDate, LocalDateTime endDate);
 
@@ -59,5 +60,5 @@ public interface PaymentService {
    * @param status payment status
    * @return Payment
    */
-  Payment updatePayment(String id, PaymentStatus status);
+  PaymentDTO updatePayment(String id, PaymentStatus status);
 }
