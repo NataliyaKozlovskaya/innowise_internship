@@ -1,4 +1,4 @@
-package com.innowise.payment.service;
+package com.innowise.payment.rest;
 
 import static com.innowise.payment.enums.PaymentStatus.COMPLETED;
 import static com.innowise.payment.enums.PaymentStatus.FAILED;
@@ -6,7 +6,6 @@ import static com.innowise.payment.enums.PaymentStatus.FAILED;
 
 import com.innowise.payment.dto.PaymentIdResponse;
 import com.innowise.payment.properties.ExternalServiceProperties;
-import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Backoff;

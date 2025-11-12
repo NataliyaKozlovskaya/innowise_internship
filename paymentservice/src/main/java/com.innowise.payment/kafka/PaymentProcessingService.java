@@ -3,13 +3,12 @@ package com.innowise.payment.kafka;
 
 import static com.innowise.payment.enums.PaymentStatus.FAILED;
 
-import com.innowise.payment.dto.PaymentDTO;
 import com.innowise.payment.dto.PaymentIdResponse;
 import com.innowise.payment.dto.kafka.OrderCreatedEvent;
 import com.innowise.payment.dto.kafka.PaymentProcessedEvent;
 import com.innowise.payment.entity.Payment;
 import com.innowise.payment.enums.PaymentStatus;
-import com.innowise.payment.service.ExternalPaymentServiceClient;
+import com.innowise.payment.rest.ExternalPaymentServiceClient;
 import com.innowise.payment.service.PaymentService;
 import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
