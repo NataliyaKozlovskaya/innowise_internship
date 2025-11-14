@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: NAKozlovskaya
-  SERVICES: "authenticationservice userservice orderservice apigateway"
+  SERVICES: "authenticationservice userservice orderservice apigateway paymentservice"
   IMAGE_NAME: NAKozlovskaya/innowise-internship
 
 jobs:
@@ -41,9 +41,36 @@ jobs:
         ports:
           - 6379:6379
 
+      mongodb:
+        image: mongo:6.0
+        env:
+          MONGO_INITDB_DATABASE: payment_db
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand(\"ping\").ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5      
+
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.4.0
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+
+      kafka:
+        image: confluentinc/cp-kafka:7.4.0
+        env:
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+        ports:
+          - 9092:9092
+
     strategy:
       matrix:
-        service: [ userservice, authenticationservice, orderservice, apigateway ]
+        service: [ userservice, authenticationservice, orderservice, apigateway, paymentservice ]
 
     steps:
       - name: Checkout code
@@ -112,6 +139,7 @@ jobs:
           cd ../authenticationservice && mvn clean compile -DskipTests
           cd ../orderservice && mvn clean compile -DskipTests  
           cd ../apigateway && mvn clean compile -DskipTests
+          cd ../paymentservice && mvn clean compile -DskipTests
 
       - name: SonarQube Analysis with Coverage
         env:
@@ -139,7 +167,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [ userservice, authenticationservice, orderservice, apigateway ]
+        service: [ userservice, authenticationservice, orderservice, apigateway, paymentservice ]
 
     steps:
       - name: Checkout code
