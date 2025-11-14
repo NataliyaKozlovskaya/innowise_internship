@@ -96,6 +96,18 @@
       <artifactId>spring-boot-starter-data-mongodb</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <!-- Liquibase -->
     <dependency>
       <groupId>org.liquibase</groupId>
@@ -144,15 +156,27 @@
 
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
+      <artifactId>testcontainers</artifactId>
       <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>testcontainers</artifactId>
-      <version>${testcontainers.version}</version>
+      <artifactId>mongodb</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>kafka</artifactId>
+      <version>1.19.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.kafka</groupId>
+      <artifactId>spring-kafka-test</artifactId>
       <scope>test</scope>
     </dependency>
 

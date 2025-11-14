@@ -1,4 +1,4 @@
-package unit;
+package com.innowise.payment.unit;
 
 import static com.innowise.payment.enums.PaymentStatus.COMPLETED;
 import static com.innowise.payment.enums.PaymentStatus.FAILED;

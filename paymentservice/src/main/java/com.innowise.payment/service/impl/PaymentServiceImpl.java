@@ -85,4 +85,8 @@ public class PaymentServiceImpl implements PaymentService {
     paymentRepository.save(payment);
     return paymentMapper.toPaymentDTO(payment);
   }
+
+  public void deleteAll(){
+    paymentRepository.deleteAll();
+  }
 }

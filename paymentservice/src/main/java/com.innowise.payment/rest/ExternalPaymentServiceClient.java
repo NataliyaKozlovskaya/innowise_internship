@@ -3,16 +3,15 @@ package com.innowise.payment.rest;
 import static com.innowise.payment.enums.PaymentStatus.COMPLETED;
 import static com.innowise.payment.enums.PaymentStatus.FAILED;
 
-
 import com.innowise.payment.dto.PaymentIdResponse;
 import com.innowise.payment.properties.ExternalServiceProperties;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -35,9 +34,9 @@ public class ExternalPaymentServiceClient {
    * Generates a payment ID in an external service
    */
   @Retryable(
-      retryFor = {HttpServerErrorException.ServiceUnavailable.class},
-      maxAttempts = 3,
-      backoff = @Backoff(delay = 2000, multiplier = 2)
+      retryFor = {HttpServerErrorException.class, ResourceAccessException.class,
+          RuntimeException.class},
+      maxAttempts = 3
   )
   public PaymentIdResponse generatePaymentId() {
     try {
@@ -68,8 +67,8 @@ public class ExternalPaymentServiceClient {
    * Fallback method when all retry attempts fail
    */
   @Recover
-  public PaymentIdResponse recoverGeneratePaymentId(HttpServerErrorException e) {
-    log.error("External service completely unavailable, using local generation");
+  public PaymentIdResponse recoverGeneratePaymentId(Exception e) {
+    log.error("External service completely unavailable, using local generation", e);
 
     int localPaymentId = ThreadLocalRandom.current().nextInt(1, 1001);
     boolean isSuccessful = localPaymentId % 2 == 0;
