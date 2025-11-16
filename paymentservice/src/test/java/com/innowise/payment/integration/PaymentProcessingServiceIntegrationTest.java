@@ -51,7 +51,7 @@ class PaymentProcessingServiceIntegrationTest {
 
   @Container
   static KafkaContainer kafkaContainer = new KafkaContainer(
-      DockerImageName.parse("confluentinc/cp-kafka:latest"));
+      DockerImageName.parse("confluentinc/cp-kafka:7.4.0"));
 
   public static final Long ORDER_ID = 1L;
   public static final String USER_ID = "123";
