@@ -2,7 +2,6 @@ package com.innowise.order.kafka;
 
 
 import com.innowise.order.dto.kafka.PaymentProcessedEvent;
-import com.innowise.order.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -14,10 +13,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class PaymentProcessedConsumer {
 
-  private final OrderService orderService;
+  private final OrderEventService orderEventService;
 
-  public PaymentProcessedConsumer(OrderService orderService) {
-    this.orderService = orderService;
+  public PaymentProcessedConsumer(OrderEventService orderEventService) {
+    this.orderEventService = orderEventService;
   }
 
   @KafkaListener(
@@ -30,10 +29,7 @@ public class PaymentProcessedConsumer {
       log.info("Received payment processed event: orderId={}, status={}",
           event.getOrderId(), event.getStatus());
 
-      orderService.updateOrderStatus(event.getOrderId(), event.getStatus());
-      log.info("Successfully updated order status: orderId={}, status={}",
-          event.getOrderId(), event.getStatus());
-
+      orderEventService.processPaymentEvent(event.getOrderId(), event.getStatus());
     } catch (Exception e) {
       log.error("Failed to process payment processed event: orderId={}",
           event.getOrderId(), e);
