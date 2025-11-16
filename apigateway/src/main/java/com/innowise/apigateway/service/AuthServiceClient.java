@@ -68,26 +68,6 @@ public class AuthServiceClient {
             error -> log.error("Failed to login user in AuthService: {}", error.getMessage()));
   }
 
-  public Mono<UserCreateResponse> createUserInUserService(RegistrationRequest request) {
-    String uuid = UUID.randomUUID().toString();
-    log.info("Generated UUID for user: {}", uuid);
-
-    UserCreateRequest userRequest = new UserCreateRequest(
-        uuid,
-        request.name(),
-        request.surname(),
-        request.birthDate(),
-        request.email());
-
-    return webClient.post()
-        .uri(serviceConfig.getUserServiceUrl() + "/api/v1/users/register")
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(userRequest)
-        .retrieve()
-        .bodyToMono(UserCreateResponse.class)
-        .doOnError(
-            error -> log.error("Failed to create user in User Service: {}", error.getMessage()));
-  }
 
   public Mono<AuthRegistrationResponse> createCredentialsInAuthService(
       RegistrationRequest request, String userId) {

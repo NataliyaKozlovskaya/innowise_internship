@@ -70,4 +70,12 @@ public interface OrderService {
    * @param id user identifier
    */
   void deleteOrderByUserId(String id);
+
+  /**
+   * Update order status by order identifier
+   *
+   * @param orderId       order identifier
+   * @param paymentStatus payment status
+   */
+  void updateOrderStatus(Long orderId, String paymentStatus);
 }

@@ -2,10 +2,14 @@ package com.innowise.apigateway.service;
 
 import com.innowise.apigateway.config.ServiceConfig;
 import com.innowise.apigateway.dto.auth.recovery.UserCredentialsDataRecovery;
+import com.innowise.apigateway.dto.auth.registration.RegistrationRequest;
 import com.innowise.apigateway.dto.user.UpdateUserRequest;
 import com.innowise.apigateway.dto.user.UserDTO;
 import com.innowise.apigateway.dto.user.UserWithCardDTO;
+import com.innowise.apigateway.dto.user.registration.UserCreateRequest;
+import com.innowise.apigateway.dto.user.registration.UserCreateResponse;
 import java.util.List;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
@@ -101,5 +105,26 @@ public class UserServiceClient {
         .bodyToMono(UserCredentialsDataRecovery.class)
         .doOnError(error ->
             log.error("Failed to delete card by id in CardService: {}", error.getMessage()));
+  }
+
+  public Mono<UserCreateResponse> createUserInUserService(RegistrationRequest request) {
+    String uuid = UUID.randomUUID().toString();
+    log.info("Generated UUID for user: {}", uuid);
+
+    UserCreateRequest userRequest = new UserCreateRequest(
+        uuid,
+        request.name(),
+        request.surname(),
+        request.birthDate(),
+        request.email());
+
+    return webClient.post()
+        .uri(serviceConfig.getUserServiceUrl() + "/api/v1/users/register")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(userRequest)
+        .retrieve()
+        .bodyToMono(UserCreateResponse.class)
+        .doOnError(
+            error -> log.error("Failed to create user in User Service: {}", error.getMessage()));
   }
 }
