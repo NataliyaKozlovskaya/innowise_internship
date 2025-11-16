@@ -79,7 +79,7 @@ class OrderServiceImplWireMockIntegrationTest extends BaseTestcontainersTest {
 
   @Container
   static KafkaContainer kafkaContainer = new KafkaContainer(
-      DockerImageName.parse("confluentinc/cp-kafka:latest"));
+      DockerImageName.parse("confluentinc/cp-kafka:7.4.0"));
 
   @DynamicPropertySource
   static void configureProperties(DynamicPropertyRegistry registry) {
