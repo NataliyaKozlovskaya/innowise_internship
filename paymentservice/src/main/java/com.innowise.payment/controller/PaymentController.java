@@ -2,6 +2,7 @@ package com.innowise.payment.controller;
 
 import com.innowise.payment.dto.PaymentDTO;
 import com.innowise.payment.enums.PaymentStatus;
+import com.innowise.payment.service.PaymentService;
 import com.innowise.payment.service.impl.PaymentServiceImpl;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
 
-  private final PaymentServiceImpl paymentService;
+  private final PaymentService paymentService;
 
   public PaymentController(PaymentServiceImpl paymentService) {
     this.paymentService = paymentService;

@@ -20,7 +20,7 @@ public class PaymentProcessedConsumer {
   }
 
   @KafkaListener(
-      topics = "order-payment-processed",
+      topics = "${spring.kafka.topics.order-payment-processed}",
       groupId = "orders-group",
       containerFactory = "paymentProcessedKafkaListenerContainerFactory"
   )

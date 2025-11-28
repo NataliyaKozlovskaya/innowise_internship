@@ -8,9 +8,9 @@ import com.innowise.payment.dto.kafka.OrderCreatedEvent;
 import com.innowise.payment.dto.kafka.PaymentProcessedEvent;
 import com.innowise.payment.entity.Payment;
 import com.innowise.payment.enums.PaymentStatus;
+import com.innowise.payment.mapper.PaymentMapper;
 import com.innowise.payment.rest.ExternalPaymentServiceClient;
 import com.innowise.payment.service.PaymentService;
-import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -27,16 +27,18 @@ public class PaymentProcessingService {
   private final PaymentService paymentService;
   private final ExternalPaymentServiceClient externalPaymentService;
   private final KafkaTemplate<String, Object> kafkaTemplate;
+  private final PaymentMapper paymentMapper;
 
   private static final String ORDER_PROCESSED_TOPIC = "order-payment-processed";
   private static final String PAYMENT_FAILED_TOPIC = "payment-failed";
 
   public PaymentProcessingService(PaymentService paymentService,
       ExternalPaymentServiceClient externalPaymentService,
-      KafkaTemplate<String, Object> kafkaTemplate) {
+      KafkaTemplate<String, Object> kafkaTemplate, PaymentMapper paymentMapper) {
     this.paymentService = paymentService;
     this.externalPaymentService = externalPaymentService;
     this.kafkaTemplate = kafkaTemplate;
+    this.paymentMapper = paymentMapper;
   }
 
   /**
@@ -64,13 +66,7 @@ public class PaymentProcessingService {
   }
 
   private Payment createPendingPayment(OrderCreatedEvent event) {
-    Payment payment = new Payment();
-    payment.setOrderId(event.getOrderId());
-    payment.setUserId(event.getUserId());
-    payment.setPaymentAmount(event.getAmount());
-    payment.setStatus(PaymentStatus.PENDING);
-    payment.setTimestamp(LocalDateTime.now());
-
+    Payment payment = paymentMapper.toPendingPayment(event);
     return paymentService.createPayment(payment);
   }
 
