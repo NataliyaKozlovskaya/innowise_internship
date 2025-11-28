@@ -15,4 +15,5 @@ public class ServiceConfig {
   private String authServiceUrl;
   private String cardServiceUrl;
   private String orderServiceUrl;
+  private String paymentServiceUrl;
 }

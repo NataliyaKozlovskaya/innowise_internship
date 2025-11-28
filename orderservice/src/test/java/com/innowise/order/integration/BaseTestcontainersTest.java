@@ -1,5 +1,7 @@
 package com.innowise.order.integration;
 
+import static com.innowise.order.integration.OrderServiceImplWireMockIntegrationTest.kafkaContainer;
+
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -23,5 +25,9 @@ public abstract class BaseTestcontainersTest {
     registry.add("spring.datasource.url", postgres::getJdbcUrl);
     registry.add("spring.datasource.username", postgres::getUsername);
     registry.add("spring.datasource.password", postgres::getPassword);
+
+    registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
+    registry.add("spring.kafka.consumer.auto-offset-reset", () -> "earliest");
+    registry.add("spring.kafka.producer.acks", () -> "all");
   }
 }

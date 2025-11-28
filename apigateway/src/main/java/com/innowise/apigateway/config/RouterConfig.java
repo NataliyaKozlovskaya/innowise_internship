@@ -3,6 +3,7 @@ package com.innowise.apigateway.config;
 import com.innowise.apigateway.handler.AuthHandler;
 import com.innowise.apigateway.handler.CardHandler;
 import com.innowise.apigateway.handler.OrderHandler;
+import com.innowise.apigateway.handler.PaymentHandler;
 import com.innowise.apigateway.handler.UserHandler;
 import com.innowise.apigateway.filter.JwtRouterFilter;
 import java.time.Instant;
@@ -25,14 +26,16 @@ public class RouterConfig {
   private final UserHandler userHandler;
   private final OrderHandler orderHandler;
   private final CardHandler cardHandler;
+  private final PaymentHandler paymentHandler;
   private final JwtRouterFilter jwtFilter;
 
   public RouterConfig(AuthHandler authHandler, UserHandler userHandler, OrderHandler orderHandler,
-      CardHandler cardHandler, JwtRouterFilter jwtFilter) {
+      CardHandler cardHandler, PaymentHandler paymentHandler, JwtRouterFilter jwtFilter) {
     this.authHandler = authHandler;
     this.userHandler = userHandler;
     this.orderHandler = orderHandler;
     this.cardHandler = cardHandler;
+    this.paymentHandler = paymentHandler;
     this.jwtFilter = jwtFilter;
   }
 
@@ -69,6 +72,12 @@ public class RouterConfig {
                 .PATCH("/{id}", cardHandler::updateCard)
                 .POST("/", cardHandler::createCard)
                 .DELETE("/{id}", cardHandler::deleteCard)
+            )
+            .path("/payments", paymentBuilder -> paymentBuilder
+                .GET("/user/{userId}", paymentHandler::getPaymentsByUserId)
+                .GET("/order/{orderId}", paymentHandler::getPaymentsByOrderId)
+                .GET("/status", paymentHandler::getPaymentsByPaymentStatuses)
+                .GET("/total", paymentHandler::getTotalSumOfPaymentsForPeriod)
             )
         )
                 .onError(Exception.class, this::handleError)

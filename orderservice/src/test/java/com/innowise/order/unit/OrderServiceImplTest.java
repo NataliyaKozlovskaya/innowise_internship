@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 import com.innowise.order.dto.CreateOrderRequest;
 import com.innowise.order.dto.OrderDTO;
 import com.innowise.order.dto.OrderItemRequest;
+import com.innowise.order.dto.kafka.PaymentProcessedEvent;
 import com.innowise.order.entity.Item;
 import com.innowise.order.entity.Order;
 import com.innowise.order.entity.OrderItem;
@@ -25,6 +26,7 @@ import com.innowise.order.exception.ItemNotFoundException;
 import com.innowise.order.exception.OrderNotFoundException;
 import com.innowise.order.exception.UserNotFoundException;
 import com.innowise.order.exception.UserServiceUnavailableException;
+import com.innowise.order.kafka.OrderEventService;
 import com.innowise.order.mapper.OrderMapper;
 import com.innowise.order.repository.ItemRepository;
 import com.innowise.order.repository.OrderRepository;
@@ -47,6 +49,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceImplTest {
+
+  @Mock
+  private OrderEventService orderEventService;
 
   @Mock
   private OrderRepository orderRepository;
@@ -96,11 +101,16 @@ class OrderServiceImplTest {
             new OrderItemRequest(2L, 1)
         )
     );
+    PaymentProcessedEvent paymentProcessedEvent = new PaymentProcessedEvent();
+    paymentProcessedEvent.setOrderId(1L);
+    paymentProcessedEvent.setStatus("COMPLETE");
+    paymentProcessedEvent.setPaymentId("123456");
 
     doNothing().when(userClientService).getUserById(userId);
     when(itemRepository.findByIdIn(List.of(1L, 2L))).thenReturn(List.of(item1, item2));
     when(orderRepository.save(any(Order.class))).thenReturn(order);
     when(orderMapper.toOrderDTO(order)).thenReturn(orderDTO);
+    doNothing().when(orderEventService).sendOrderCreatedEvent(any(), any(), any(), any());
 
     OrderDTO result = orderService.createOrder(request);
 

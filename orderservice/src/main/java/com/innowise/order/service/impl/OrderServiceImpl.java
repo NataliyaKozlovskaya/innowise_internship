@@ -10,16 +10,20 @@ import com.innowise.order.exception.ItemNotFoundException;
 import com.innowise.order.exception.OrderNotFoundException;
 import com.innowise.order.exception.UserNotFoundException;
 import com.innowise.order.exception.UserServiceUnavailableException;
+import com.innowise.order.kafka.OrderEventService;
 import com.innowise.order.mapper.OrderMapper;
 import com.innowise.order.repository.ItemRepository;
 import com.innowise.order.repository.OrderRepository;
 import com.innowise.order.rest.OrderClientService;
 import com.innowise.order.service.OrderService;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,14 +36,17 @@ public class OrderServiceImpl implements OrderService {
   private final ItemRepository itemRepository;
   private final OrderMapper orderMapper;
   private final OrderClientService userClientService;
+  private final OrderEventService orderEventService;
 
   public OrderServiceImpl(OrderRepository orderRepository, ItemRepository itemRepository,
-      OrderMapper orderMapper, OrderClientService userClientService
+      OrderMapper orderMapper, OrderClientService userClientService,
+      @Lazy OrderEventService orderEventService
   ) {
     this.orderRepository = orderRepository;
     this.itemRepository = itemRepository;
     this.orderMapper = orderMapper;
     this.userClientService = userClientService;
+    this.orderEventService = orderEventService;
   }
 
   @Transactional
@@ -51,6 +58,13 @@ public class OrderServiceImpl implements OrderService {
 
     Order order = buildOrder(request.userId(), availableItems, itemQuantities);
     Order savedOrder = orderRepository.save(order);
+
+    orderEventService.sendOrderCreatedEvent(
+        savedOrder.getId(),
+        savedOrder.getUserId(),
+        getAmount(availableItems, itemQuantities),
+        LocalDateTime.now()
+    );
 
     return orderMapper.toOrderDTO(savedOrder);
   }
@@ -99,6 +113,19 @@ public class OrderServiceImpl implements OrderService {
     order.setStatus(newStatus);
     Order updatedOrder = orderRepository.save(order);
     return orderMapper.toOrderDTO(updatedOrder);
+  }
+
+  @Override
+  public void updateOrderStatus(Long orderId, String paymentStatus) {
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+
+    OrderStatus newStatus = "COMPLETED".equals(paymentStatus)
+        ? OrderStatus.COMPLETED
+        : OrderStatus.PAYMENT_FAILED;
+
+    order.setStatus(newStatus);
+    orderRepository.save(order);
   }
 
   @Override
@@ -196,5 +223,45 @@ public class OrderServiceImpl implements OrderService {
     });
 
     return order;
+  }
+
+  private BigDecimal getAmount(Map<Long, Item> availableItems, Map<Long, Integer> itemQuantities) {
+    BigDecimal totalAmount = BigDecimal.ZERO;
+
+    for (Map.Entry<Long, Integer> entry : itemQuantities.entrySet()) {
+      Long itemId = entry.getKey();
+      Integer quantity = entry.getValue();
+
+      Item item = checkItem(availableItems, itemId);
+      checkQuantity(quantity, itemId);
+      BigDecimal itemPrice = checkPrice(item, itemId);
+
+      BigDecimal itemTotal = itemPrice.multiply(BigDecimal.valueOf(quantity));
+      totalAmount = totalAmount.add(itemTotal);
+    }
+
+    return totalAmount;
+  }
+
+  private static BigDecimal checkPrice(Item item, Long itemId) {
+    BigDecimal itemPrice = item.getPrice();
+    if (itemPrice == null || itemPrice.compareTo(BigDecimal.ZERO) < 0) {
+      throw new IllegalArgumentException("Invalid price for item id: " + itemId);
+    }
+    return itemPrice;
+  }
+
+  private static void checkQuantity(Integer quantity, Long itemId) {
+    if (quantity <= 0) {
+      throw new IllegalArgumentException("Invalid quantity for item id: " + itemId);
+    }
+  }
+
+  private Item checkItem(Map<Long, Item> availableItems, Long itemId) {
+    Item item = availableItems.get(itemId);
+    if (item == null) {
+      throw new IllegalArgumentException("Item not found with id: " + itemId);
+    }
+    return item;
   }
 }

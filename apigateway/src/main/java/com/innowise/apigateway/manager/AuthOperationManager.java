@@ -7,6 +7,7 @@ import com.innowise.apigateway.dto.auth.registration.RegistrationResponse;
 import com.innowise.apigateway.dto.auth.token.RefreshTokenRequest;
 import com.innowise.apigateway.dto.auth.token.TokenValidationResponse;
 import com.innowise.apigateway.service.AuthServiceClient;
+import com.innowise.apigateway.service.UserServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -16,10 +17,12 @@ import reactor.core.publisher.Mono;
 public class AuthOperationManager {
 
   private final AuthServiceClient authClient;
+  private final UserServiceClient userClient;
   private final RollbackManager rollbackManager;
 
-  public AuthOperationManager(AuthServiceClient authClient, RollbackManager rollbackManager) {
+  public AuthOperationManager(AuthServiceClient authClient, UserServiceClient userClient, RollbackManager rollbackManager) {
     this.authClient = authClient;
+    this.userClient = userClient;
     this.rollbackManager = rollbackManager;
   }
 
@@ -30,7 +33,7 @@ public class AuthOperationManager {
   public Mono<RegistrationResponse> registerUser(RegistrationRequest request) {
     log.info("API Gateway: Starting registration for user: {}", request.email());
 
-    return authClient.createUserInUserService(request)
+    return userClient.createUserInUserService(request)
         .flatMap(userResponse -> {
           String userId = userResponse.uuid();
           log.info("User created successfully: {}, ID: {}", userResponse.email(), userId);

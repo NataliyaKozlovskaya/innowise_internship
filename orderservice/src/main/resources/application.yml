@@ -5,6 +5,19 @@ spring:
   application:
     name: order-service
 
+  kafka:
+    bootstrap-servers: innowise_internship-kafka-1:9092
+    consumer:
+      auto-offset-reset: earliest
+      group-id: order-service
+    topics:
+      order-created: order-created
+      order-payment-processed: order-payment-processed
+      payment-failed: payment-failed
+    properties:
+      security.protocol: PLAINTEXT
+      ssl.endpoint.identification.algorithm: ""
+      
   liquibase:
     enabled: false
     default-schema: order_schema

@@ -39,6 +39,70 @@ services:
       retries: 5
       start_period: 10s
 
+  # Mongo
+  mongodb:
+    image: mongo:7.0
+    container_name: mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: payment_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - innowise-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Zookeeper
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - innowise-network
+    healthcheck:
+      test: [ "CMD", "echo", "ruok", "|", "nc", "localhost", "2181" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    networks:
+      - innowise-network
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: [ "CMD", "kafka-topics", "--list", "--bootstrap-server", "kafka:9092" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    command: >
+      bash -c "
+        echo 'Waiting for Zookeeper to start...' &&
+        sleep 45 &&
+        /etc/confluent/docker/run"
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+
   # User Service
   user-service:
     build:
@@ -53,8 +117,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
-#    ports:
-#      - "8090:8088"
     depends_on:
       redis:
         condition: service_healthy
@@ -67,6 +129,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
 
   # Authentication Service
   auth-service:
@@ -102,6 +165,7 @@ services:
       dockerfile: Dockerfile
     container_name: order-service
     environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SERVER_PORT: 8099
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/innowise_db?currentSchema=order_schema
@@ -113,10 +177,37 @@ services:
         condition: service_healthy
       user-service:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
     networks:
       - innowise-network
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8099/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Payment Service
+  payment-service:
+    build:
+      context: ./paymentservice
+      dockerfile: Dockerfile
+    container_name: payment-service
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://admin:admin123@mongodb:27017/payment_db?authSource=admin
+      SPRING_DATA_MONGODB_DATABASE: payment_db
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SERVER_PORT: 8066
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - innowise-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8066/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -135,6 +226,7 @@ services:
       AUTH_SERVICE_URL: http://auth-service:8089
       USER_SERVICE_URL: http://user-service:8088
       ORDER_SERVICE_URL: http://order-service:8099
+      PAYMENT_SERVICE_URL: http://payment-service:8066
     ports:
       - "8093:8077"
     depends_on:
@@ -147,16 +239,16 @@ services:
     networks:
       - innowise-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8077/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
 
 
-
 volumes:
   postgres_data:
   redis_data:
+  mongo_data:
 
 networks:
   innowise-network:
