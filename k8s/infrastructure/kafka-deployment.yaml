@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+        - name: kafka
+          image: apache/kafka:3.7.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              cd /opt/kafka
+              
+              # Configuring Kafka in Kraft mode (without Zookeeper)
+              echo "node.id=1" >> config/kraft/server.properties
+              echo "process.roles=broker,controller" >> config/kraft/server.properties
+              echo "controller.quorum.voters=1@localhost:9093" >> config/kraft/server.properties
+              echo "listeners=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093" >> config/kraft/server.properties
+              echo "advertised.listeners=PLAINTEXT://kafka:9092" >> config/kraft/server.properties
+              echo "inter.broker.listener.name=PLAINTEXT" >> config/kraft/server.properties
+              echo "auto.create.topics.enable=true" >> config/kraft/server.properties
+              
+              # Format the storage and run it.
+              ./bin/kafka-storage.sh format -t $(./bin/kafka-storage.sh random-uuid) -c config/kraft/server.properties
+              exec ./bin/kafka-server-start.sh config/kraft/server.properties
+          ports:
+            - containerPort: 9092
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+spec:
+  selector:
+    app: kafka
+  ports:
+    - port: 9092
+      targetPort: 9092
+  type: ClusterIP
