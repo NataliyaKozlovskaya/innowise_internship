@@ -4,6 +4,6 @@ metadata:
   name: app-config
 data:
   application.properties: |
-    # Общие настройки для всех сервисов
+    # General settings for all services
     logging.level.org.springframework=INFO
     spring.jackson.serialization.write-dates-as-timestamps=false
