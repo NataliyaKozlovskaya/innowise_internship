@@ -15,6 +15,7 @@ public interface PaymentMapper {
   PaymentDTO toPaymentDTO(Payment payment);
 
   @Mapping(target = "status", constant = "PENDING")
+  @Mapping(target = "paymentAmount", source = "amount")
   @Mapping(target = "timestamp", expression = "java(java.time.LocalDateTime.now())")
   Payment toPendingPayment(OrderCreatedEvent event);
 }
