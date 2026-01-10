@@ -12,25 +12,24 @@ import org.springframework.data.mongodb.repository.Query;
  */
 public interface PaymentRepository extends MongoRepository<Payment, String> {
 
-  /**
-   * Finds all payments by order id
-   */
-  List<Payment> findByOrderId(Long orderId);
+    /**
+     * Finds all payments by order id
+     */
+    List<Payment> findByOrderId(Long orderId);
 
-  /**
-   * Finds all payments by user id
-   */
-  List<Payment> findByUserId(String userId);
+    /**
+     * Finds all payments by user id
+     */
+    List<Payment> findByUserId(String userId);
 
-  /**
-   * Finds all payments made by statuses
-   */
-  List<Payment> findByStatusIn(List<PaymentStatus> statuses);
+    /**
+     * Finds all payments made by statuses
+     */
+    List<Payment> findByStatusIn(List<PaymentStatus> statuses);
 
-  /**
-   * Finds completed payments within a specified time period and returns only their payment amounts
-   */
-  @Query(value = "{'timestamp': {$gte: ?0, $lte: ?1}, 'status': 'COMPLETED'}",
-      fields = "{'paymentAmount': 1}")
-  List<Payment> findCompletedPaymentsInPeriod(LocalDateTime start, LocalDateTime end);
+    /**
+     * Finds completed payments within a specified time period and returns only their payment amounts
+     */
+    @Query("{'timestamp': {$gte: ?0, $lte: ?1}, 'status': 'COMPLETED'}")
+    List<Payment> findCompletedPaymentsInPeriod(LocalDateTime start, LocalDateTime end);
 }
