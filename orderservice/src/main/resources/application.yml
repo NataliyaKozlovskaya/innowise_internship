@@ -50,7 +50,32 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus,metrics
   health:
     redis:
       enabled: false
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  tracing:
+    sampling:
+      probability: 1.0
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+
+opentelemetry:
+  service:
+    name: @project.artifactId@
+  exporter:
+    otlp:
+      endpoint: ${OTLP_ENDPOINT:http://otel-collector:4317}
+  instrumentation:
+    micrometer:
+      enabled: true

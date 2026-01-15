@@ -11,10 +11,24 @@ spec:
     metadata:
       labels:
         app: payment-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8066"
+        prometheus.io/path: "/actuator/prometheus"
     spec:
+      initContainers:
+        - name: wait-for-mongodb
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nc -z mongodb 27017; do echo waiting for mongodb; sleep 2; done; echo MongoDB is ready']
+
+        - name: wait-for-kafka
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nc -z kafka 9092; do echo waiting for kafka; sleep 2; done; echo Kafka is ready']
+
       containers:
         - name: payment-service
           image: payment-service:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8066
           env:
@@ -28,15 +42,78 @@ spec:
               value: "payment_db"
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka:9092"
+
+            - name: SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET
+              value: "earliest"
+            - name: SPRING_KAFKA_CONSUMER_GROUP_ID
+              value: "payments-group"
+            - name: SPRING_DATA_MONGODB_AUTO_INDEX_CREATION
+              value: "true"
+
+            - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+              value: "health,metrics,prometheus,info"
+            - name: MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED
+              value: "true"
+            - name: MANAGEMENT_TRACING_ENABLED
+              value: "false"
+
+            - name: OTEL_SERVICE_NAME
+              value: "payment-service"
+
+            - name: OTEL_TRACES_EXPORTER
+              value: "none"
+            - name: OTEL_METRICS_EXPORTER
+              value: "none"
+            - name: OTEL_LOGS_EXPORTER
+              value: "none"
+
+            - name: OTEL_INSTRUMENTATION_MONGODB_ENABLED
+              value: "false"
+            - name: OTEL_INSTRUMENTATION_KAFKA_ENABLED
+              value: "false"
+            - name: OTEL_INSTRUMENTATION_JDBC_ENABLED
+              value: "false"
+
+            - name: OTEL_SEMCONV_STABILITY_OPT_IN
+              value: "http, messaging, database"
+
+            - name: JAVA_TOOL_OPTIONS
+              value: "-javaagent:/opt/opentelemetry-javaagent.jar"
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8066
+              scheme: HTTP
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            failureThreshold: 36
+            timeoutSeconds: 5
+
           livenessProbe:
             httpGet:
-              path: /actuator/health/liveness
+              path: /actuator/health
               port: 8066
-            initialDelaySeconds: 60
+              scheme: HTTP
+            initialDelaySeconds: 130
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
           readinessProbe:
             httpGet:
-              path: /actuator/health/readiness
+              path: /actuator/health
               port: 8066
-            initialDelaySeconds: 30
+              scheme: HTTP
+            initialDelaySeconds: 100
             periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
