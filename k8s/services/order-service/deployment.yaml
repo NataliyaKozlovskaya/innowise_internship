@@ -11,11 +11,20 @@ spec:
     metadata:
       labels:
         app: order-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8099"
+        prometheus.io/path: "/actuator/prometheus"
     spec:
       initContainers:
         - name: wait-for-kafka
           image: busybox:1.28
-          command: [ 'sh', '-c', 'until nslookup kafka; do echo waiting for kafka; sleep 2; done; until nc -z kafka 9092; do echo waiting for kafka port; sleep 2; done; echo Kafka is ready' ]
+          command: ['sh', '-c', 'until nslookup kafka; do echo waiting for kafka; sleep 2; done; until nc -z kafka 9092; do echo waiting for kafka port; sleep 2; done; echo Kafka is ready']
+
+        - name: wait-for-postgres
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done; echo Postgres is ready']
+
       containers:
         - name: order-service
           image: order-service:latest
@@ -37,6 +46,78 @@ spec:
               value: "kafka:9092"
             - name: USER_SERVICE_URL
               value: "http://user-service:80"
+
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+            - name: SPRING_SQL_INIT_MODE
+              value: "always"
+            - name: SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET
+              value: "earliest"
+            - name: SPRING_KAFKA_CONSUMER_GROUP_ID
+              value: "orders-group"
+
+            - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+              value: "health,metrics,prometheus,info"
+            - name: MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED
+              value: "true"
+            - name: MANAGEMENT_TRACING_ENABLED
+              value: "false"
+
+            - name: OTEL_SERVICE_NAME
+              value: "order-service"
+
+            - name: OTEL_TRACES_EXPORTER
+              value: "none"
+            - name: OTEL_METRICS_EXPORTER
+              value: "none"
+            - name: OTEL_LOGS_EXPORTER
+              value: "none"
+
+            - name: OTEL_INSTRUMENTATION_JDBC_ENABLED
+              value: "false"
+            - name: OTEL_INSTRUMENTATION_KAFKA_ENABLED
+              value: "false"
+            - name: OTEL_INSTRUMENTATION_HIKARI_ENABLED
+              value: "false"
+            - name: OTEL_INSTRUMENTATION_SPRING_DATA_ENABLED
+              value: "false"
+
+            - name: OTEL_SEMCONV_STABILITY_OPT_IN
+              value: "http, messaging"
+
+            - name: JAVA_TOOL_OPTIONS
+              value: "-javaagent:/opt/opentelemetry-javaagent.jar"
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8099
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 48
+            timeoutSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8099
+              scheme: HTTP
+            initialDelaySeconds: 200
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8099
+              scheme: HTTP
+            initialDelaySeconds: 150
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+
           resources:
             requests:
               memory: "256Mi"
@@ -44,15 +125,3 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
-          livenessProbe:
-            httpGet:
-              path: /actuator/health/liveness
-              port: 8099
-            initialDelaySeconds: 60
-            periodSeconds: 10
-          readinessProbe:
-            httpGet:
-              path: /actuator/health/readiness
-              port: 8099
-            initialDelaySeconds: 30
-            periodSeconds: 5

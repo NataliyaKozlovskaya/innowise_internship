@@ -28,17 +28,39 @@ jwt:
   secret: ${JWT_SECRET}
   issuer: "api-gateway"
 
-logging:
-  level:
-    com.company.gateway: DEBUG
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus,metrics
     enabled-by-default: true
-  endpoint:
-    health:
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  tracing:
+    sampling:
+      probability: 1.0
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+
+opentelemetry:
+  service:
+    name: @project.artifactId@
+  exporter:
+    otlp:
+      endpoint: ${OTLP_ENDPOINT:http://otel-collector:4317}
+  instrumentation:
+    micrometer:
       enabled: true
-      show-details: always

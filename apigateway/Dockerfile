@@ -4,7 +4,13 @@ COPY . .
 RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jre
+
+ARG OTEL_VERSION=1.32.0
+ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OTEL_VERSION}/opentelemetry-javaagent.jar /opt/opentelemetry-javaagent.jar
+
 WORKDIR /application
 COPY --from=builder /application/target/*.jar app.jar
+
 EXPOSE 8077
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
