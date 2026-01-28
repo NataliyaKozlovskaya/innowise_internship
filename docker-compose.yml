@@ -244,6 +244,20 @@ services:
       timeout: 10s
       retries: 3
 
+  frontend:
+    build:
+      context: ./services/frontend  # путь к папке с фронтендом
+      dockerfile: Dockerfile        # ваш Dockerfile
+    container_name: frontend
+    ports:
+      - "8888:3000"                # хост:8888 → контейнер:3000
+    environment:
+      - REACT_APP_API_URL=http://api-gateway:8077/api
+    networks:
+      - innowise-network
+    depends_on:
+      - api-gateway
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     command: ["--config=/etc/otel-collector-config.yaml"]
