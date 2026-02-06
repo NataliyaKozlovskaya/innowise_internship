@@ -2,6 +2,8 @@ package com.innowise.order.service;
 
 import com.innowise.order.dto.CreateOrderRequest;
 import com.innowise.order.dto.OrderDTO;
+import com.innowise.order.dto.kafka.OrderCreatedEvent;
+import com.innowise.order.dto.kafka.PaymentProcessedEvent;
 import com.innowise.order.enums.OrderStatus;
 import java.util.List;
 
@@ -27,10 +29,10 @@ public interface OrderService {
   /**
    * Find orders by user identifier
    *
-   * @param id user identifier
+   * @param userId user identifier
    * @return list of orders
    */
-  List<OrderDTO> getOrdersByUserId(String id);
+  List<OrderDTO> getOrdersByUserId(String userId);
 
   /**
    * Find list of orders by ids

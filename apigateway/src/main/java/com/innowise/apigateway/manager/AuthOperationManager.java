@@ -40,6 +40,7 @@ public class AuthOperationManager {
 
           return authClient.createCredentialsInAuthService(request, userId)
               .thenReturn(new RegistrationResponse(
+                  userId,
                   request.login(),
                   request.email()))
               .onErrorResume(error ->

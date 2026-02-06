@@ -8,6 +8,8 @@ import com.innowise.apigateway.handler.UserHandler;
 import com.innowise.apigateway.filter.JwtRouterFilter;
 import java.time.Instant;
 import java.util.Map;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -59,6 +61,7 @@ public class RouterConfig {
             )
             .path("/orders", orderBuilder -> orderBuilder
                 .POST("/", orderHandler::createOrder)
+                .GET("/users/internal/{userId}", orderHandler::getOrdersByUserId)
                 .GET("/batch", orderHandler::getOrdersByIds)
                 .GET("/status", orderHandler::getOrdersByStatuses)
                 .GET("/{id}", orderHandler::getOrderById)

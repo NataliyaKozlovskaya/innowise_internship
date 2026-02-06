@@ -3,6 +3,8 @@ package com.innowise.order.service.impl;
 import com.innowise.order.dto.CreateOrderRequest;
 import com.innowise.order.dto.OrderDTO;
 import com.innowise.order.dto.OrderItemRequest;
+import com.innowise.order.dto.kafka.OrderCreatedEvent;
+import com.innowise.order.dto.kafka.PaymentProcessedEvent;
 import com.innowise.order.entity.Item;
 import com.innowise.order.entity.Order;
 import com.innowise.order.enums.OrderStatus;
@@ -80,7 +82,7 @@ public class OrderServiceImpl implements OrderService {
   @Transactional(readOnly = true)
   @Override
   public List<OrderDTO> getOrdersByUserId(String userId) {
-    return orderRepository.findAllByUserId(userId)
+    return orderRepository.findByUserId(userId)
         .stream()
         .map(orderMapper::toOrderDTO)
         .toList();

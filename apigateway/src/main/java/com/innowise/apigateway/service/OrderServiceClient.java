@@ -87,14 +87,24 @@ public class OrderServiceClient {
                 error.getMessage()));
   }
 
-  public Mono<OrderDTO> createOrderInOrderService(CreateOrderRequest request) {
-    return webClient.post()
-        .uri(serviceConfig.getOrderServiceUrl() + "/api/v1/orders")
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(request)
-        .retrieve()
-        .bodyToMono(OrderDTO.class)
-        .doOnError(
-            error -> log.error("Failed to create order in OrderService: {}", error.getMessage()));
-  }
+    public Mono <List<OrderDTO>> getOrdersByUserIdInOrderService(String userId) {
+        return webClient.get()
+                .uri(serviceConfig.getOrderServiceUrl() + "/api/v1/orders/users/internal/{userId}", userId)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<List<OrderDTO>>() {})
+                .doOnError(
+                        error -> log.error("Failed to get orders by userId in OrderService: {}",
+                                error.getMessage()));
+    }
+
+    public Mono<OrderDTO> createOrderInOrderService(CreateOrderRequest request) {
+        return webClient.post()
+                .uri(serviceConfig.getOrderServiceUrl() + "/api/v1/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(OrderDTO.class)
+                .doOnError(
+                        error -> log.error("Failed to create order in OrderService: {}", error.getMessage()));
+    }
 }
