@@ -4,6 +4,8 @@ import com.innowise.order.entity.Order;
 import com.innowise.order.enums.OrderStatus;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -25,7 +27,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
   /**
    * Find all orders by user id
    */
-  List<Order> findAllByUserId(String userId);
+  List<Order> findByUserId(String userId);
 
   /**
    * Delete orders by userId

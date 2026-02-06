@@ -12,6 +12,5 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = OrderItemMapper.class)
 public interface OrderMapper {
 
-  @Mapping(target = "orderItems", source = "orderItems")
   OrderDTO toOrderDTO(Order order);
 }

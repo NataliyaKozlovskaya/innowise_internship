@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Navbar, Nav, Button } from 'react-bootstrap';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const Layout = () => {
@@ -16,21 +16,26 @@ const Layout = () => {
       <>
         <Navbar bg="dark" variant="dark" expand="lg">
           <Container>
-            <Navbar.Brand href="/">Микросервисное приложение</Navbar.Brand>
+            <Navbar.Brand as={Link} to="/">INNOWISE STORE</Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="me-auto">
-                <Nav.Link href="/">Главная</Nav.Link>
-                {/* Добавьте другие ссылки здесь позже */}
+                <Link to="/" className="nav-link">MAIN</Link>
+                <Link to="/orders" className="nav-link">ORDERS</Link>
+                <Link to="/payments" className="nav-link">
+                  <i className="bi bi-credit-card me-1"></i>
+                  PAYMENTS
+                </Link>
+                {}
               </Nav>
               <Nav>
                 {user && (
                     <Navbar.Text className="me-3">
-                      Привет, {user.username}!
+                      Hello, {user.username}!
                     </Navbar.Text>
                 )}
                 <Button variant="outline-light" onClick={handleLogout}>
-                  Выйти
+                  EXIT
                 </Button>
               </Nav>
             </Navbar.Collapse>
@@ -38,7 +43,7 @@ const Layout = () => {
         </Navbar>
 
         <Container className="mt-4">
-          <Outlet /> {/* Здесь будут отображаться дочерние компоненты */}
+          <Outlet /> {}
         </Container>
       </>
   );

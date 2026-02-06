@@ -2,17 +2,20 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { CartProvider } from './contexts/CartContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Layout from './components/Layout';
 import Home from './pages/Home';
+import OrdersPage from './pages/OrdersPage';
+import CreateOrderPage from './pages/CreateOrderPage';
+import PaymentsPage from './pages/PaymentsPage';
 
-// Компонент защищённого маршрута
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <div className="text-center mt-5">Загрузка...</div>;
+    return <div className="text-center mt-5">Loading...</div>;
   }
 
   if (!isAuthenticated) {
@@ -24,34 +27,36 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
 const AppRoutes = () => {
   return (
-      <Routes>
-        {/* Публичные маршруты */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
-        {/* Защищённые маршруты */}
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }>
-          <Route index element={<Home />} />
-          {/* Добавьте другие маршруты позже */}
-        </Route>
+      <Route element={
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      }>
+        <Route path="/" element={<Home />} />
+        <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/orders/new" element={<CreateOrderPage />} />
+        <Route path="/orders/users/internal/:userId" element={<OrdersPage />} />
+        <Route path="/payments" element={<PaymentsPage />} />
+      </Route>
 
-        {/* Редирект несуществующих путей */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 };
 
 function App() {
   return (
-      <Router>
-        <AuthProvider>
+    <Router>
+      <AuthProvider>
+        <CartProvider>
           <AppRoutes />
-        </AuthProvider>
-      </Router>
+        </CartProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

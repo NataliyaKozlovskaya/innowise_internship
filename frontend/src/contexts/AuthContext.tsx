@@ -15,7 +15,7 @@ interface AuthContextType {
   loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -38,11 +38,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Проверяем валидность токена при загрузке
-    if (token) {
-      // Здесь можно добавить проверку токена через API
-      // Если токен невалиден, очищаем
-    }
     setLoading(false);
   }, [token]);
 
@@ -59,6 +54,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('refreshToken');
     setToken(null);
     setUser(null);
   };
@@ -66,8 +62,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const isAuthenticated = !!token;
 
   return (
-      <AuthContext.Provider value={{ isAuthenticated, user, token, login, logout, loading }}>
-        {children}
-      </AuthContext.Provider>
+    <AuthContext.Provider value={{ isAuthenticated, user, token, login, logout, loading }}>
+      {children}
+    </AuthContext.Provider>
   );
 };

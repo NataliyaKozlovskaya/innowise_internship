@@ -46,6 +46,18 @@ public class OrderHandler {
         });
   }
 
+    public Mono<ServerResponse> getOrdersByUserId(ServerRequest request) {
+        String userId = request.pathVariable("userId");
+        log.info("Getting orders by userId: {}", userId);
+
+        return orderOperationManager.getOrdersByUserId(userId)
+                .flatMap(order -> ServerResponse.ok().bodyValue(order))
+                .onErrorResume(error -> {
+                    log.error("Get orders by userId {} failed", userId, error.getMessage());
+                    return ServerResponse.badRequest().build();
+                });
+    }
+
   public Mono<ServerResponse> getOrdersByIds(ServerRequest request) {
     return Mono.justOrEmpty(request.queryParam("ids"))
         .switchIfEmpty(Mono.error(new IllegalArgumentException("Ids parameter is required")))

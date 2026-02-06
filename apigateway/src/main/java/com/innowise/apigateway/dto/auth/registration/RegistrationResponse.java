@@ -6,6 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 /**
  * Record representing a user registration response dto
  */
-public record RegistrationResponse(@NotBlank String login, @Email String email) {
+public record RegistrationResponse(@NotBlank String uuid, @NotBlank String login, @Email String email) {
 
 }

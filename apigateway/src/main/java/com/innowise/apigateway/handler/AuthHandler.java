@@ -34,7 +34,7 @@ public class AuthHandler {
           log.error("Registration failed: {}", error.getMessage());
 
           return ServerResponse.badRequest()
-              .bodyValue(new RegistrationResponse("error", "error@email.com"));
+              .bodyValue(new RegistrationResponse("error","error", "error@email.com"));
         });
   }
 

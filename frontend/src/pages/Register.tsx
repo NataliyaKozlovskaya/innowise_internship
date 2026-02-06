@@ -35,32 +35,29 @@ const Register = () => {
     setError('');
     setSuccess('');
 
-    // Валидация
     if (formData.password !== formData.confirmPassword) {
-      setError('Пароли не совпадают');
+      setError('The passwords do not match');
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('Пароль должен быть не менее 6 символов');
+      setError('The password must be at least 6 characters long.');
       return;
     }
 
     if (!formData.login.trim()) {
-      setError('Логин обязателен');
+      setError('Login is required');
       return;
     }
 
     if (!formData.email.trim()) {
-      setError('Email обязателен');
+      setError('Email is required');
       return;
     }
 
     setLoading(true);
 
     try {
-      // Отправляем ВСЕ данные в одну конечную точку
-      // API Gateway сам разберется куда что отправлять
       const response = await authApi.register({
         login: formData.login,
         password: formData.password,
@@ -72,7 +69,8 @@ const Register = () => {
 
       console.log('Registration response:', response.data);
 
-      // После регистрации пробуем автоматически войти
+      const { uuid, login: registeredLogin, email: registeredEmail } = response.data;
+
       try {
         const loginResponse = await authApi.login({
           login: formData.login,
@@ -81,33 +79,36 @@ const Register = () => {
 
         const { accessToken, refreshToken } = loginResponse.data;
 
-        // Сохраняем токены
         localStorage.setItem('token', accessToken);
         if (refreshToken) {
           localStorage.setItem('refreshToken', refreshToken);
         }
 
-        // Сохраняем данные пользователя
         const userData = {
-          username: formData.login,
-          email: formData.email,
+          username: registeredLogin || formData.login,
+          email: registeredEmail || formData.email,
           name: formData.name,
           surname: formData.surname,
           roles: ['USER'],
         };
 
+        localStorage.setItem('uuid', uuid);
+
         localStorage.setItem('user', JSON.stringify(userData));
+
         login(accessToken, userData);
 
-        setSuccess('Регистрация и вход выполнены! Перенаправление...');
+        setSuccess('Registration and login completed! Redirect...');
 
         setTimeout(() => {
           navigate('/');
         }, 1500);
 
       } catch (loginErr) {
-        // Если авто-вход не удался, просто редиректим на логин
-        setSuccess('Регистрация успешна! Теперь вы можете войти.');
+        localStorage.setItem('uuid', uuid);
+        console.log('UUID saved:', uuid);
+
+        setSuccess('Registration successful! You can now log in');
 
         setTimeout(() => {
           navigate('/login');
@@ -118,13 +119,13 @@ const Register = () => {
       console.error('Registration error:', err);
 
       if (err.response?.status === 400) {
-        setError(err.response.data.message || 'Ошибка регистрации');
+        setError(err.response.data.message || 'Registration error');
       } else if (err.response?.data?.error) {
         setError(err.response.data.error);
       } else if (err.message?.includes('Network Error')) {
-        setError('Не удалось подключиться к серверу');
+        setError('Failed to connect to the server');
       } else {
-        setError('Произошла ошибка при регистрации');
+        setError('An error occurred while registering');
       }
     } finally {
       setLoading(false);
@@ -138,7 +139,7 @@ const Register = () => {
             <Card>
               <Card.Body>
                 <Card.Title className="text-center mb-2">`INNOWISE-STORE`</Card.Title>
-                <Card.Title className="text-center mb-3">Регистрация</Card.Title>
+                <Card.Title className="text-center mb-3">Registration</Card.Title>
 
                 {error && (
                     <Alert variant="danger" dismissible onClose={() => setError('')}>
@@ -156,13 +157,13 @@ const Register = () => {
                   <Row>
                     <Col md={6}>
                       <Form.Group className="mb-2">
-                        <Form.Label>Имя *</Form.Label>
+                        <Form.Label>Name *</Form.Label>
                         <Form.Control
                             type="text"
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            placeholder="Ваше имя"
+                            placeholder="Your name"
                             required
                             disabled={loading}
                         />
@@ -171,13 +172,13 @@ const Register = () => {
 
                     <Col md={6}>
                       <Form.Group className="mb-2">
-                        <Form.Label>Фамилия *</Form.Label>
+                        <Form.Label>Surname *</Form.Label>
                         <Form.Control
                             type="text"
                             name="surname"
                             value={formData.surname}
                             onChange={handleChange}
-                            placeholder="Ваша фамилия"
+                            placeholder="Your surname"
                             required
                             disabled={loading}
                         />
@@ -186,13 +187,13 @@ const Register = () => {
                   </Row>
 
                   <Form.Group className="mb-2">
-                    <Form.Label>Логин *</Form.Label>
+                    <Form.Label>Login *</Form.Label>
                     <Form.Control
                         type="text"
                         name="login"
                         value={formData.login}
                         onChange={handleChange}
-                        placeholder="Придумайте логин"
+                        placeholder="Come up with a login"
                         required
                         disabled={loading}
                     />
@@ -212,7 +213,7 @@ const Register = () => {
                   </Form.Group>
 
                   <Form.Group className="mb-2">
-                    <Form.Label>Дата рождения</Form.Label>
+                    <Form.Label>Date of birth</Form.Label>
                     <Form.Control
                         type="date"
                         name="birthDate"
@@ -222,31 +223,31 @@ const Register = () => {
                         disabled={loading}
                     />
                     <Form.Text className="text-muted">
-                      Необязательно
+                      Not necessarily
                     </Form.Text>
                   </Form.Group>
 
                   <Form.Group className="mb-2">
-                    <Form.Label>Пароль *</Form.Label>
+                    <Form.Label>Password *</Form.Label>
                     <Form.Control
                         type="password"
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
-                        placeholder="Придумайте пароль (мин. 6 символов)"
+                        placeholder="Create a password (min. 6 characters)"
                         required
                         disabled={loading}
                     />
                   </Form.Group>
 
                   <Form.Group className="mb-2">
-                    <Form.Label>Подтвердите пароль *</Form.Label>
+                    <Form.Label>Confirm your password *</Form.Label>
                     <Form.Control
                         type="password"
                         name="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                        placeholder="Повторите пароль"
+                        placeholder="Repeat password"
                         required
                         disabled={loading}
                     />
@@ -258,31 +259,14 @@ const Register = () => {
                         type="submit"
                         disabled={loading}
                     >
-                      {loading ? 'Регистрация...' : 'Зарегистрироваться'}
+                      {loading ? 'Registration...' : 'Register'}
                     </Button>
 
                     <div className="text-center mt-3">
-                      <Link to="/login">Уже есть аккаунт? Войдите</Link>
+                      <Link to="/login">Already have an account? Log in</Link>
                     </div>
                   </div>
                 </Form>
-
-                {/* Отладочная информация */}
-                {/*<div className="mt-4 p-2 bg-light border rounded small">*/}
-                {/*  <p className="mb-1">*/}
-                {/*    <strong>Отправляемые данные:</strong>*/}
-                {/*  </p>*/}
-                {/*  <pre className="mb-0" style={{fontSize: '11px'}}>*/}
-                {/*  {JSON.stringify({*/}
-                {/*    login: formData.login,*/}
-                {/*    email: formData.email,*/}
-                {/*    name: formData.name,*/}
-                {/*    surname: formData.surname,*/}
-                {/*    birthDate: formData.birthDate || '(не указано)',*/}
-                {/*    password: '***' // не показываем пароль*/}
-                {/*  }, null, 2)}*/}
-                {/*</pre>*/}
-                {/*</div>*/}
               </Card.Body>
             </Card>
           </Col>

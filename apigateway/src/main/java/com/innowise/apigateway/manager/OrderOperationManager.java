@@ -55,6 +55,22 @@ public class OrderOperationManager {
         });
   }
 
+    /**
+     * Get orders by userId
+     */
+    public Mono<List<OrderDTO>> getOrdersByUserId(String userId) {
+        log.info("API Gateway: Starting find orders by userId in OrderService: {}", userId);
+        return orderClient.getOrdersByUserIdInOrderService(userId)
+                .doOnSuccess(orderDTOs ->
+                        log.info("API Gateway: get orders by userId {} successful. Found {} orders", userId,
+                                orderDTOs.size()))
+                .map(orderDTOs -> orderDTOs.stream()
+                        .map(order -> new OrderDTO(order.userId(), order.status(), order.creationDate(),
+                                order.orderItems()))
+                        .toList()
+                );
+    }
+
   /**
    * Get list orders by ids
    */
